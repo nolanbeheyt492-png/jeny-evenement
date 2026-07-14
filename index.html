@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JN Événement — Traiteur pour Mariages &amp; Réceptions</title>
+<meta name="description" content="Traiteur événementiel pour mariages, anniversaires et réceptions privées. Menus sur-mesure, devis gratuit sous 48h, livraison et dressage inclus.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="JN Événement — Traiteur pour Mariages & Réceptions">
+<meta property="og:description" content="Traiteur événementiel pour mariages, anniversaires et réceptions privées. Menus sur-mesure, devis gratuit sous 48h.">
+<meta property="og:image" content="https://jn-evenement.vercel.app/og-image.png">
+<meta property="og:url" content="https://jn-evenement.vercel.app/index.html">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="JN Événement — Traiteur pour Mariages & Réceptions">
+<meta name="twitter:description" content="Traiteur événementiel pour mariages, anniversaires et réceptions privées. Menus sur-mesure, devis gratuit sous 48h.">
+<meta name="twitter:image" content="https://jn-evenement.vercel.app/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<style>
+  .grid-features, .grid-testimonials, .checklist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .feature-card { background: var(--panel); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--border); text-align: left; transition:all .25s; }
+  .feature-card:hover{ border-color: var(--accent); transform:translateY(-3px); box-shadow:0 14px 28px -14px rgba(33,27,18,0.18); }
+  .feature-card h3 { font-size: 1.15rem; margin-bottom: 10px; color: var(--text); font-weight:700; }
+  .feature-card p { color: var(--text-muted); font-size: 0.95rem; }
+
+  .checklist-box { background: var(--bg-alt); border: 1px solid var(--border); padding: 36px; border-radius: var(--radius-lg); margin-top: 40px; }
+  .checklist-item { display: flex; gap: 16px; margin-bottom: 16px; align-items: start; }
+  .checklist-item .icon-badge{ margin-bottom:0; width:44px; height:44px; }
+  .checklist-item .icon-badge svg{ width:20px; height:20px; }
+  .checklist-item h4 { font-size: 1rem; color: var(--text); margin-bottom: 4px; font-weight:700; }
+  .checklist-item p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
+
+  .testimonial-card { background: var(--panel); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(33,27,18,0.03); }
+  .stars { color: var(--accent); margin-bottom: 12px; font-size: 1.2rem; letter-spacing:2px; }
+  .testimonial-card p { font-style: italic; color: var(--text); margin-bottom: 16px; font-size: 0.95rem; }
+  .testimonial-author { font-weight: 700; font-size: 0.9rem; color: var(--text); font-family: var(--font-display); }
+  .testimonial-author span { display:block; font-weight:400; font-family: var(--font-body); color: var(--text-muted); font-size:0.8rem; margin-top:2px; }
+
+  .process-track{ position:relative; display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-top:52px; }
+  .process-track::before{ content:""; position:absolute; top:26px; left:5%; right:5%; height:1px; background:var(--chalk); z-index:0; }
+  .process-step{ position:relative; z-index:1; text-align:center; }
+  .process-step .step-num{ width:52px; height:52px; border-radius:50%; background:var(--panel); border:2px solid var(--chalk); color:var(--chalk); font-family:var(--font-mono); font-weight:600; font-size:1.1rem; display:flex; align-items:center; justify-content:center; margin:0 auto 18px; }
+  .process-step h4{ font-size:1.05rem; margin-bottom:8px; color:var(--text); font-family:var(--font-display); }
+  .process-step p{ font-size:0.88rem; color:var(--text-muted); line-height:1.55; max-width:230px; margin:0 auto; }
+  @media (max-width:768px){
+    .process-track{ grid-template-columns:1fr; gap:32px; text-align:left; }
+    .process-track::before{ display:none; }
+    .process-step{ display:flex; gap:16px; text-align:left; align-items:flex-start; }
+    .process-step .step-num{ margin:0; flex-shrink:0; }
+    .process-step p{ max-width:none; }
+  }
+</style>
+<link rel="icon" type="image/png" sizes="512x512" href="favicon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FoodEstablishment",
+  "name": "JN Événement",
+  "image": "https://jn-evenement.vercel.app/og-image.png",
+  "telephone": "+33600000000",
+  "priceRange": "\u20ac\u20ac",
+  "areaServed": { "@type": "AdministrativeArea", "name": "Pyr\u00e9n\u00e9es-Orientales" },
+  "address": { "@type": "PostalAddress", "addressRegion": "Occitanie", "addressLocality": "Perpignan", "postalCode": "66000", "addressCountry": "FR" },
+  "url": "https://jn-evenement.vercel.app/",
+  "servesCuisine": "Traiteur événementiel"
+}
+</script>
+</head>
+
+<body>
+<div id="page-loader">
+  <div class="loader-mark">JN <span>ÉVÉNEMENT</span> <span class="loader-dot"></span></div>
+</div>
+
+<header>
+  <div class="nav wrap">
+    <div class="brand" id="brand-logo" style="cursor: pointer; user-select: none;"><img src="img/logo.png" alt="Jennifer Événementiel" class="brand-logo-img"></div>
+    <ul id="nav-menu">
+      <li><a href="index.html" class="active">Accueil</a></li>
+      <li><a href="menus.html">Nos Menus</a></li>
+      <li><a href="engagements.html">Nos Engagements</a></li>
+      <li><a href="certifications.html">Certifications</a></li>
+      <li><a href="realisations.html">Photos</a></li>
+      <li><a href="contact.html">Contact &amp; Devis</a></li>
+    </ul>
+    <a href="contact.html" class="btn btn-primary header-btn">Devis sous 48h</a>
+    <button class="menu-toggle" id="menu-btn">☰</button>
+  </div>
+</header>
+
+<section class="hero" id="hero-section">
+  <div class="wrap">
+    <div class="eyebrow">Traiteur événementiel — 66</div>
+    <h1>Des instants savourés.<br>Un événement réglé avec soin.</h1>
+    <p>Traiteur spécialisé dans les réceptions privées — mariages, anniversaires, baptêmes et fêtes de famille — intervenant à <strong>Perpignan et dans les communes alentours (66)</strong>. Menus sur-mesure, produits frais et service impeccable.</p>
+    <div class="hero-badges">
+      <span>Hygiène HACCP Certifiée</span>
+      <span>Devis Gratuit sous 48h</span>
+      <span>Produits Frais &amp; Locaux</span>
+    </div>
+
+    <div class="project-picker">
+      <a href="menus.html#cocktail-apero">🥂 Cocktail</a>
+      <a href="menus.html#mariage-prestige">💍 Mariage</a>
+      <a href="menus.html#anniversaire-buffet">🎉 Anniversaire</a>
+      <a href="contact.html?type=autre">✨ Autre événement</a>
+    </div>
+
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <a href="contact.html" class="btn btn-primary">Demander un devis gratuit</a>
+      <a href="menus.html" class="btn btn-outline">Découvrir nos menus</a>
+    </div>
+  </div>
+</section>
+
+<div class="chalk-divider" aria-hidden="true">
+  <span class="chalk-label">Table dressée</span>
+  <span class="chalk-line"></span>
+  <span class="chalk-label">Fraîcheur &amp; précision</span>
+</div>
+
+<!-- ESTIMATEUR DE BUDGET INTERACTIF -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2>Estimez votre budget en 30 secondes</h2>
+      <p>Choisissez un menu et le nombre de convives pour obtenir un premier ordre d'idée — votre devis exact et gratuit reste établi après échange sur vos envies.</p>
+    </div>
+    <div class="estimator-box reveal">
+      <div class="estimator-grid">
+        <div class="estimator-field est-dropdown-field">
+          <label for="est-type-btn">Menu souhaité</label>
+          <button type="button" class="est-dropdown-btn" id="est-type-btn" aria-haspopup="listbox" aria-expanded="false">
+            <span id="est-type-btn-label">Choisir un menu</span>
+            <svg viewBox="0 0 24 24" class="est-dropdown-arrow"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="est-menu-cards" id="est-type" role="listbox"></div>
+        </div>
+        <div class="estimator-field">
+          <label for="est-surface">Nombre de convives</label>
+          <input type="number" id="est-surface" min="1" max="500" value="30" placeholder="Ex: 30">
+        </div>
+      </div>
+
+      <div class="estimator-result">
+        <div class="price-range" id="est-result">—</div>
+        <p id="est-min-note">Fourchette indicative pour ce menu, produits et mise en place comprises.<br>Le prix final dépend des options choisies et du service souhaité.</p>
+        <div class="estimator-actions">
+          <a href="contact.html" class="btn btn-primary" id="est-cta">Obtenir mon devis précis gratuit</a>
+          <button type="button" class="btn btn-outline" id="est-pdf-btn"><svg viewBox="0 0 24 24"><path d="M12 3v13m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Télécharger le PDF</button>
+        </div>
+      </div>
+
+      <p class="estimator-disclaimer">⚠️ Estimation indicative calculée à partir du prix de base par personne du menu choisi (2026), donnée à titre informatif. Elle ne constitue pas un devis. Seul un échange avec notre équipe permet d'établir un tarif garanti.</p>
+    </div>
+  </div>
+</section>
+
+<div class="ornament-divider reveal">
+  <span class="ornament-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></span>
+</div>
+
+<div class="romantic-quote reveal">
+  <span class="romantic-quote-deco">✦</span>
+  <p>Chaque table dressée raconte une histoire</p>
+  <span class="romantic-quote-deco">✦</span>
+</div>
+
+<section class="section section-alt">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2>Pourquoi nous faire confiance ?</h2>
+      <p>Chaque événement est unique. Nous nous engageons sur la fraîcheur des produits, la ponctualité de la livraison et un dressage soigné, digne de votre occasion.</p>
+    </div>
+    <div class="grid-features reveal-stagger">
+      <div class="feature-card">
+        <div class="icon-badge"><svg viewBox="0 0 24 24"><path d="M12 3l7 3.2v5.3c0 4.6-3 8.6-7 9.5-4-.9-7-4.9-7-9.5V6.2L12 3z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h3>Hygiène HACCP</h3>
+        <p>Toute notre chaîne de production respecte la méthode HACCP, du stockage à la livraison sur site.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-badge"><svg viewBox="0 0 24 24"><rect x="3" y="10" width="18" height="4" rx="1"/><line x1="7" y1="10" x2="7" y2="14"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="17" y1="10" x2="17" y2="14"/></svg></div>
+        <h3>Produits Frais</h3>
+        <p>Une sélection de produits frais et de saison, privilégiant les producteurs locaux dès que possible.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-badge"><svg viewBox="0 0 24 24"><path d="M5 3v3M3.5 4.5h3M14 4l1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/><path d="M6 17l6-11 6 11z"/><line x1="9.5" y1="11.5" x2="14.5" y2="11.5"/></svg></div>
+        <h3>Dressage Soigné</h3>
+        <p>Mise en place élégante et personnalisable, pensée pour sublimer chaque table et chaque plat.</p>
+      </div>
+    </div>
+    <div class="trust-badges">
+      <div class="trust-badge"><span class="icon-mini"><svg viewBox="0 0 24 24"><path d="M12 3l7 3.2v5.3c0 4.6-3 8.6-7 9.5-4-.9-7-4.9-7-9.5V6.2L12 3z"/></svg></span><div class="txt"><strong>Hygiène HACCP</strong><span>Chaîne du froid maîtrisée</span></div></div>
+      <div class="trust-badge"><span class="icon-mini"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 10h6M9 14h6M9 18h3"/></svg></span><div class="txt"><strong>Devis Gratuit</strong><span>Réponse sous 48h</span></div></div>
+      <div class="trust-badge"><span class="icon-mini"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0119 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg></span><div class="txt"><strong>Perpignan &amp; alentours</strong><span>Zone d'intervention 66</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- NOTRE PROCESS -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow" style="justify-content:center;">Comment ça marche</div>
+      <h2>Notre Process, du premier échange à la table dressée</h2>
+      <p>Quatre étapes claires, sans surprise, du premier contact jusqu'au jour J.</p>
+    </div>
+    <div class="process-track reveal-stagger">
+      <div class="process-step">
+        <div class="step-num">01</div>
+        <h4>Appel ou formulaire</h4>
+        <p>Vous décrivez votre événement par téléphone ou via le formulaire. On revient vers vous sous 48h.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">02</div>
+        <h4>Échange &amp; dégustation</h4>
+        <p>Nous affinons le menu selon vos goûts, votre budget et le nombre de convives. Dégustation possible sur demande.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">03</div>
+        <h4>Devis chiffré</h4>
+        <p>Vous recevez une proposition claire et détaillée, gratuite et sans engagement.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">04</div>
+        <h4>Livraison &amp; service</h4>
+        <p>Livraison, dressage et service assurés le jour J par notre équipe, jusqu'au rangement final.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHECKLIST CLIENT -->
+<section class="section">
+  <div class="wrap">
+    <div class="checklist-box reveal">
+      <h3 style="margin-top:0; margin-bottom:12px; color:var(--text);">Check-list : Préparer votre réception avant notre arrivée</h3>
+      <p style="color:var(--text-muted); margin-bottom:24px; font-size:0.95rem;">Pour optimiser notre installation et garantir un service impeccable, voici quelques points à valider :</p>
+
+      <div class="checklist-grid reveal-stagger">
+        <div class="checklist-item">
+          <div class="icon-badge"><svg viewBox="0 0 24 24"><path d="M3 8l9-5 9 5-9 5-9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg></div>
+          <div>
+            <h4>Accès &amp; stationnement</h4>
+            <p>Merci de nous indiquer un accès dégagé pour le déchargement du matériel et un espace de stationnement à proximité.</p>
+          </div>
+        </div>
+        <div class="checklist-item">
+          <div class="icon-badge"><svg viewBox="0 0 24 24"><path d="M13 3L4 14h6l-1 7 9-11h-6l1-7z"/></svg></div>
+          <div>
+            <h4>Électricité disponible</h4>
+            <p>Nos équipements de maintien au chaud/froid nécessitent un accès fonctionnel à une alimentation électrique sur le lieu de réception.</p>
+          </div>
+        </div>
+        <div class="checklist-item">
+          <div class="icon-badge"><svg viewBox="0 0 24 24"><path d="M12 3v11"/><circle cx="12" cy="17" r="3.4"/></svg></div>
+          <div>
+            <h4>Espace de dressage</h4>
+            <p>Une table ou un espace dédié à la mise en place des plats et boissons facilite grandement notre installation.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AVIS CLIENTS -->
+<section class="section section-alt">
+  <div class="wrap">
+    <div class="section-head reveal reviews-head">
+      <div class="eyebrow" style="justify-content:center;">Ils nous ont fait confiance</div>
+      <h2>Avis clients</h2>
+      <p>Des événements réalisés dans tout le département, racontés par les personnes qui les ont vécus.</p>
+      <div class="reviews-live-badge" id="reviews-badge">
+        <span class="live-dot"></span>
+        <span class="stars-inline">★★★★★</span>
+        <strong id="reviews-avg">5.0</strong>/5 · <span id="reviews-count">avis Google vérifiés</span>
+      </div>
+    </div>
+    <div class="grid-testimonials reveal-stagger" id="reviews-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Le menu mariage était sublime, tout le monde s'est régalé. Le dressage était magnifique et l'équipe très professionnelle."</p>
+        <div class="testimonial-author">Martine R.<span>Perpignan</span></div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Devis clair et respecté au centime près. Le cocktail apéritif a fait l'unanimité pour notre pot de départ."</p>
+        <div class="testimonial-author">Thomas B.<span>Argelès-sur-Mer</span></div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"Buffet dînatoire copieux et savoureux pour l'anniversaire de ma fille : résultat impeccable et service à l'heure."</p>
+        <div class="testimonial-author">Isabelle F.<span>Céret</span></div>
+      </div>
+    </div>
+    <div class="reviews-cta reveal">
+      <a href="#" id="reviews-cta-link" class="btn btn-outline" target="_blank" rel="noopener">Voir tous nos avis Google →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-wrap">
+    <div>© <span id="year"></span> JN Événement. Tous droits réservés.</div>
+    <div>Hygiène HACCP | Traiteur événementiel — Perpignan & alentours</div>
+  </div>
+</footer>
+
+<div class="mobile-action-bar">
+  <a href="tel:0600000000" class="call-btn">📞 Appeler</a>
+  <a href="contact.html" class="devis-btn">📝 Devis gratuit</a>
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  const menuBtn = document.getElementById('menu-btn');
+  const navMenu = document.getElementById('nav-menu');
+  let jcSavedScrollY = 0;
+  function jcLockPageScroll() {
+    jcSavedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.documentElement.style.overscrollBehavior = 'none';
+    document.body.style.position = 'fixed';
+    document.body.style.top = (-jcSavedScrollY) + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+  }
+  function jcUnlockPageScroll() {
+    document.documentElement.style.overscrollBehavior = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, jcSavedScrollY);
+  }
+  menuBtn.addEventListener('click', () => {
+    const isOpen = navMenu.classList.toggle('active');
+    menuBtn.textContent = isOpen ? '✕' : '☰';
+    if (isOpen) { jcLockPageScroll(); } else { jcUnlockPageScroll(); }
+  });
+  navMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      navMenu.classList.remove('active');
+      menuBtn.textContent = '☰';
+      jcUnlockPageScroll();
+    });
+  });
+  window.addEventListener('pageshow', () => {
+    navMenu.classList.remove('active');
+    menuBtn.textContent = '☰';
+    jcUnlockPageScroll();
+  });
+  window.addEventListener('load', () => {
+    document.body.classList.add('loaded');
+    const loader = document.getElementById('page-loader');
+    if (loader) loader.classList.add('hidden');
+  });
+  const revealEls = document.querySelectorAll('.reveal, .reveal-stagger');
+  if ('IntersectionObserver' in window && revealEls.length) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { entry.target.classList.add('visible'); io.unobserve(entry.target); }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(el => io.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add('visible'));
+  }
+
+  // ==========================================================
+  // ESTIMATEUR DE BUDGET — basé sur les menus gérés depuis l'admin
+  // ==========================================================
+  const estType = document.getElementById('est-type');
+  const estTypeBtn = document.getElementById('est-type-btn');
+  const estTypeBtnLabel = document.getElementById('est-type-btn-label');
+  const estSurface = document.getElementById('est-surface');
+  const estResult = document.getElementById('est-result');
+  const estMinNote = document.getElementById('est-min-note');
+  const estCta = document.getElementById('est-cta');
+  let estSelectedId = null;
+
+  function getMenusSafe() { return (window.JN ? window.JN.getMenus() : []); }
+
+  function closeMenuDropdown() {
+    estType.classList.remove('open');
+    estTypeBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  function populateMenuSelect() {
+    const menus = getMenusSafe();
+    if (!estSelectedId && menus.length) estSelectedId = menus[0].id;
+    estType.innerHTML = menus.map(m => `
+      <div class="est-menu-card${m.id === estSelectedId ? ' selected' : ''}" data-id="${m.id}" role="option">
+        <div class="est-menu-title">${m.title}</div>
+        <div class="est-menu-price">${window.JN.formatEuro(m.pricePerPerson)}/pers.</div>
+      </div>`).join('');
+    estType.querySelectorAll('.est-menu-card').forEach(card => {
+      card.addEventListener('click', () => {
+        estSelectedId = card.dataset.id;
+        estType.querySelectorAll('.est-menu-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        closeMenuDropdown();
+        updateEstimate();
+      });
+    });
+    const selMenu = menus.find(m => m.id === estSelectedId);
+    if (selMenu) estTypeBtnLabel.textContent = `${selMenu.title} — ${window.JN.formatEuro(selMenu.pricePerPerson)}/pers.`;
+  }
+
+  estTypeBtn.addEventListener('click', () => {
+    const isOpen = estType.classList.toggle('open');
+    estTypeBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.est-dropdown-field')) closeMenuDropdown();
+  });
+
+  function updateEstimate() {
+    const menus = getMenusSafe();
+    const menu = menus.find(m => m.id === estSelectedId) || menus[0];
+    if (!menu) return;
+    let guests = Math.max(1, parseInt(estSurface.value, 10) || 0);
+    const total = menu.pricePerPerson * guests;
+    estResult.textContent = window.JN.formatEuro(total);
+    estMinNote.innerHTML = `Basé sur ${guests} convive(s) au tarif de base de ${window.JN.formatEuro(menu.pricePerPerson)}/personne pour « ${menu.title} ».` +
+      (guests < menu.minGuests ? `<br><strong style="color:var(--accent);">⚠️ Ce menu nécessite un minimum de ${menu.minGuests} convives.</strong>` : '');
+    estCta.href = `contact.html?type=${encodeURIComponent(menu.id)}&guests=${guests}`;
+    estTypeBtnLabel.textContent = `${menu.title} — ${window.JN.formatEuro(menu.pricePerPerson)}/pers.`;
+  }
+
+  document.addEventListener('jn:menus-updated', () => { populateMenuSelect(); updateEstimate(); });
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.JN) window.JN.ready.then(() => { populateMenuSelect(); updateEstimate(); });
+  });
+  if (window.JN) window.JN.ready.then(() => { populateMenuSelect(); updateEstimate(); });
+  estSurface.addEventListener('input', updateEstimate);
+
+  // Génération du devis PDF (100% côté client, aucune donnée envoyée)
+  const estPdfBtn = document.getElementById('est-pdf-btn');
+  if (estPdfBtn) {
+    estPdfBtn.addEventListener('click', () => {
+      if (!window.jspdf) { alert('Le générateur de PDF se charge encore, réessayez dans un instant.'); return; }
+      const menus = getMenusSafe();
+      const menu = menus.find(m => m.id === estSelectedId) || menus[0];
+      if (!menu) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const guests = Math.max(1, parseInt(estSurface.value, 10) || 0);
+      const total = menu.pricePerPerson * guests;
+      const today = new Date().toLocaleDateString('fr-FR');
+
+      doc.setFillColor(33, 27, 18);
+      doc.rect(0, 0, 210, 34, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(20);
+      doc.text('JN ÉVÉNEMENT', 15, 20);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Traiteur événementiel — Perpignan et alentours (66)', 15, 27);
+
+      doc.setTextColor(33, 27, 18);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Estimation indicative de budget', 15, 48);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Généré le ${today}`, 15, 55);
+
+      doc.setDrawColor(230, 224, 210);
+      doc.line(15, 62, 195, 62);
+
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Menu choisi', 15, 74);
+      doc.text('Nombre de convives', 15, 84);
+      doc.text('Prix par personne', 15, 94);
+      doc.text('Total estimé', 15, 104);
+      doc.setFont('helvetica', 'normal');
+      doc.text(menu.title, 75, 74);
+      doc.text(`${guests} personne(s)`, 75, 84);
+      doc.text(window.JN.formatEuro(menu.pricePerPerson), 75, 94);
+      doc.setTextColor(168, 112, 58);
+      doc.setFont('helvetica', 'bold');
+      doc.text(window.JN.formatEuro(total), 75, 104);
+
+      doc.setTextColor(107, 97, 83);
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(9);
+      const disclaimer = doc.splitTextToSize(
+        "Estimation indicative calculée à partir du tarif de base par personne du menu choisi (2026), donnée à titre informatif. Elle ne constitue pas un devis contractuel. Seul un échange avec notre équipe permet d'établir un tarif garanti et définitif, incluant les options choisies.",
+        180
+      );
+      doc.text(disclaimer, 15, 116);
+
+      doc.setDrawColor(230, 224, 210);
+      doc.line(15, 140, 195, 140);
+      doc.setTextColor(33, 27, 18);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text('Pour transformer cette estimation en devis ferme et gratuit :', 15, 150);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text('Téléphone : 06 00 00 00 00', 15, 158);
+      doc.text('Zone d\'intervention : Perpignan et communes alentours (66)', 15, 165);
+      doc.text('Devis gratuit et sans engagement sous 48h.', 15, 172);
+
+      doc.save(`estimation-jn-evenement-${menu.id}-${guests}pers.pdf`);
+    });
+  }
+
+  // ==========================================================
+  // AVIS GOOGLE EN DIRECT
+  // ==========================================================
+  window.JN_REVIEWS_CONFIG = window.JN_REVIEWS_CONFIG || {
+    googleMapsApiKey: '',
+    googlePlaceId: '',
+    googleReviewsUrl: 'https://www.google.com/search?q=JN+Evenement+avis'
+  };
+  (function initGoogleReviews(){
+    const cfg = window.JN_REVIEWS_CONFIG;
+    const ctaLink = document.getElementById('reviews-cta-link');
+    if (ctaLink && cfg.googleReviewsUrl) ctaLink.href = cfg.googleReviewsUrl;
+  })();
+</script>
+<script src="admin.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact &amp; Devis — JN Événement</title>
+<meta name="description" content="Demandez votre devis gratuit sous 48h. Traiteur événementiel pour mariages, anniversaires et réceptions privées.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Contact & Devis — JN Événement">
+<meta property="og:description" content="Demandez votre devis gratuit sous 48h. Traiteur événementiel pour mariages, anniversaires et réceptions privées.">
+<meta property="og:image" content="https://jn-evenement.vercel.app/og-image.png">
+<meta property="og:url" content="https://jn-evenement.vercel.app/contact.html">
+<meta property="og:locale" content="fr_FR">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .contact-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; margin-top: 40px; }
+  .contact-info-box { background: var(--text); color: white; padding: 40px; border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 22px; }
+  .contact-info-box h3 { color: white; font-size: 1.3rem; }
+  .info-link { color: white; text-decoration: none; font-size: 1.2rem; font-weight: bold; display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-mono); }
+  .info-link:hover { color: var(--accent); }
+
+  .faq-container { max-width: 850px; margin: 60px auto 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+  .thankyou-section {
+    display: none; background: var(--panel); padding: 60px 40px; border-radius: var(--radius-lg);
+    max-width: 600px; margin: 40px auto; text-align: center; box-shadow: 0 24px 48px -16px rgba(33,27,18,0.2);
+    border: 1px solid var(--border);
+  }
+  .thankyou-section.show { display: block; }
+  .thankyou-icon { font-size: 3.5rem; color: var(--success); margin-bottom: 20px; }
+  .thankyou-section h3 { font-size: 1.7rem; color: var(--text); margin-bottom: 16px; }
+  .thankyou-section p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px; }
+</style>
+<link rel="icon" type="image/png" sizes="512x512" href="favicon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+
+<body>
+<div id="page-loader">
+  <div class="loader-mark">JN <span>ÉVÉNEMENT</span> <span class="loader-dot"></span></div>
+</div>
+
+<header>
+  <div class="nav wrap">
+    <div class="brand" id="brand-logo"><img src="img/logo.png" alt="Jennifer Événementiel" class="brand-logo-img"></div>
+    <ul id="nav-menu">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="menus.html">Nos Menus</a></li>
+      <li><a href="engagements.html">Nos Engagements</a></li>
+      <li><a href="certifications.html">Certifications</a></li>
+      <li><a href="realisations.html">Photos</a></li>
+      <li><a href="contact.html" class="active">Contact &amp; Devis</a></li>
+    </ul>
+    <a href="contact.html" class="btn btn-primary header-btn">Devis sous 48h</a>
+    <button class="menu-toggle" id="menu-btn">☰</button>
+  </div>
+</header>
+
+<section class="section" style="margin-top: 40px;">
+  <div class="wrap">
+
+    <!-- BLOC DE REMERCIEMENT (S'ACTIVE APRÈS L'ENVOI) -->
+    <div id="thankyou-block" class="thankyou-section">
+      <div class="thankyou-icon"><svg viewBox="0 0 24 24" width="1em" height="1em" style="stroke:currentColor; fill:none; stroke-width:1.5; vertical-align:-0.15em;"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg></div>
+      <h3>Demande de devis reçue !</h3>
+      <p>Merci pour votre confiance. Vos informations ont bien été transmises. Nous étudions votre événement et nous vous recontactons par téléphone sous 48 heures.</p>
+      <a href="index.html" class="btn btn-primary">Retour à l'accueil</a>
+    </div>
+
+    <!-- CONTENU PRINCIPAL DU FORMULAIRE -->
+    <div id="main-contact-content">
+      <div class="section-head reveal">
+        <div class="eyebrow" style="justify-content:center;">On en parle ?</div>
+        <h2>Contactez-nous / Demande de Devis</h2>
+        <p>Un événement à organiser ? Remplissez le formulaire ci-dessous ou appelez-nous directement.</p>
+      </div>
+
+      <!-- DEMANDE DE JOUR POUR VOTRE ÉVÉNEMENT -->
+      <div class="booking-box reveal" style="margin-bottom:56px;">
+        <div class="booking-intro">
+          <div class="icon-badge"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg></div>
+          <div>
+            <h3>Demandez le jour de votre événement</h3>
+            <p>Indiquez le jour souhaité pour votre réception. ⚠️ Ceci n'est pas une réservation automatique : chaque demande est étudiée manuellement pour vérifier notre disponibilité ce jour-là, avant confirmation.</p>
+          </div>
+        </div>
+
+        <span class="booking-step-label">Choisissez le jour souhaité</span>
+        <div class="booking-dates" id="booking-dates"></div>
+
+        <div class="booking-summary" id="booking-summary"></div>
+
+        <form action="https://formsubmit.co/beheytnolan@gmail.com" method="POST" id="booking-form" data-jn-quote-form>
+          <input type="hidden" name="_next" value="https://jn-evenement.vercel.app/merci.html">
+          <input type="hidden" name="_subject" value="Nouvelle demande de jour - JN Événement">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="text" name="_honey" style="display:none">
+          <input type="hidden" name="Jour_Souhaite" id="booking-date-input">
+          <input type="hidden" name="Statut" value="En attente de confirmation de disponibilité">
+          <div class="booking-mini-grid" style="margin-bottom:20px;">
+            <div class="form-group">
+              <label>Votre Nom / Prénom</label>
+              <input type="text" name="Nom_Prenom" required minlength="2" pattern="^[a-zA-ZÀ-ÿ\s\-'\.]+$" placeholder="Ex: Jean Dupont">
+            </div>
+            <div class="form-group">
+              <label>Numéro de Téléphone</label>
+              <input type="tel" name="Telephone" required pattern="^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$" placeholder="Ex: 06 12 34 56 78">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" id="booking-submit" style="width:100%; padding:14px;" disabled>Sélectionnez un jour pour continuer</button>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:10px; text-align:center;">Nous vous confirmons par téléphone sous 48h si le jour demandé est disponible.</p>
+        </form>
+      </div>
+
+      <div class="chalk-divider" aria-hidden="true">
+        <span class="chalk-label">Ou</span>
+        <span class="chalk-line"></span>
+        <span class="chalk-label">Devis détaillé</span>
+      </div>
+
+      <div class="contact-wrapper reveal-stagger">
+        <div class="contact-info-box">
+          <h3>JN ÉVÉNEMENT</h3>
+          <p style="color:#E3C9C0;">Nous intervenons à Perpignan et dans les communes alentours pour organiser votre réception, du cocktail à la réception assise.</p>
+          <div class="zone-tags" id="zone-tags-container">
+            <span>Perpignan</span><span>Canet-en-Roussillon</span><span>Cabestany</span><span>Saint-Estève</span><span>Le Soler</span>
+          </div>
+          <hr style="border:none; border-top:1px solid rgba(255,255,255,0.14);">
+          <p style="color:#E3C9C0;">Par téléphone :</p>
+          <a href="tel:0600000000" class="info-link" data-jn-phone-link><span data-jn-phone-text>06 00 00 00 00</span></a>
+          <hr style="border:none; border-top:1px solid rgba(255,255,255,0.14);">
+          <p style="color:#E3C9C0;">Horaires :</p>
+          <p style="font-weight: 600; margin: 0;">Lundi au Vendredi : 8h00 — 18h30<br>Samedi : Sur rendez-vous (dégustations)</p>
+          <div class="map-wrap">
+            <iframe src="https://www.google.com/maps?q=Pyr%C3%A9n%C3%A9es-Orientales&output=embed" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+        </div>
+
+        <div class="form-box" style="margin: 0;">
+          <form action="https://formsubmit.co/beheytnolan@gmail.com" method="POST" data-jn-quote-form>
+            <input type="hidden" name="_next" value="https://jn-evenement.vercel.app/contact.html?status=success">
+            <input type="hidden" name="_subject" value="Nouveau Devis Client - JN Événement">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="text" name="_honey" style="display:none">
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Votre Nom / Prénom</label>
+                <input type="text" name="Nom_Prenom" required minlength="2" pattern="^[a-zA-ZÀ-ÿ\s\-'\.]+$" placeholder="Ex: Jean Dupont">
+              </div>
+              <div class="form-group">
+                <label>Numéro de Téléphone</label>
+                <input type="tel" name="Telephone" required pattern="^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$" placeholder="Ex: 06 12 34 56 78">
+              </div>
+              <div class="form-group form-group-full">
+                <label>Lieu de la réception</label>
+                <input type="text" name="Lieu_Reception" required minlength="2" placeholder="Ex: Perpignan (66000) ou nom de la salle">
+              </div>
+              <div class="form-group">
+                <label>Type d'événement</label>
+                <select name="Type_Evenement" id="type-evenement-select" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:var(--radius-md); background:white;">
+                  <option value="cocktail-apero">Cocktail / Vin d'honneur</option>
+                  <option value="dinatoire">Buffet dînatoire</option>
+                  <option value="mariage-prestige">Mariage (repas assis)</option>
+                  <option value="anniversaire-buffet">Anniversaire / Fête de famille</option>
+                  <option value="brunch-bapteme">Brunch / Baptême</option>
+                  <option value="autre">Autre événement</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Nombre de convives estimé</label>
+                <input type="number" name="Nombre_Convives" min="1" placeholder="Ex: 50">
+              </div>
+              <div class="form-group form-group-full">
+                <label>Description de votre projet</label>
+                <textarea name="Message" id="message-textarea" rows="4" required minlength="10" placeholder="Ex: Bonjour, nous organisons un mariage pour 80 personnes le..."></textarea>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; margin-top: 15px;">Envoyer ma demande de devis</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="chalk-divider" aria-hidden="true">
+      <span class="chalk-label">Questions</span>
+      <span class="chalk-line"></span>
+      <span class="chalk-label">Réponses</span>
+    </div>
+    <div class="faq-container reveal">
+      <h3 style="text-align: center; margin-bottom: 20px; color: var(--text);">Questions fréquentes &amp; Réponses</h3>
+      <div class="faq-search">
+        <input type="text" id="faq-search-input" placeholder="Rechercher une question (ex: devis, allergies, délai...)">
+      </div>
+      <p class="faq-no-result" id="faq-no-result">Aucune question ne correspond à votre recherche. Essayez un autre mot-clé, ou <a href="tel:0600000000" style="color:var(--accent); font-weight:600;">appelez-nous directement</a>.</p>
+
+      <div class="faq-item">
+        <div class="faq-question">Le devis est-il gratuit et sous combien de temps ? <span class="faq-toggle">+</span></div>
+        <div class="faq-answer">Oui, tous nos devis sont 100% gratuits et sans aucun engagement. Après un échange sur vos envies, nous vous envoyons une proposition chiffrée claire sous 48 heures.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Respectez-vous les normes d'hygiène alimentaire ? <span class="faq-toggle">+</span></div>
+        <div class="faq-answer">Absolument. Toute notre équipe est formée à la méthode HACCP et notre entreprise possède l'ensemble des assurances obligatoires, dont la Responsabilité Civile Professionnelle.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Pouvez-vous adapter les menus aux allergies et régimes alimentaires ? <span class="faq-toggle">+</span></div>
+        <div class="faq-answer">Oui, tout à fait. Signalez-nous les allergies, intolérances ou régimes particuliers (végétarien, végan, sans gluten...) lors de votre demande : nous adaptons systématiquement les recettes concernées.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Assurez-vous la livraison et le service sur place ? <span class="faq-toggle">+</span></div>
+        <div class="faq-answer">Oui, la livraison et la mise en place sont toujours incluses. Le service en salle (serveurs) est disponible en option selon la formule choisie et le nombre de convives.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Combien de temps à l'avance dois-je réserver ? <span class="faq-toggle">+</span></div>
+        <div class="faq-answer">Pour un mariage ou un grand événement, nous recommandons de réserver 3 à 6 mois à l'avance. Pour un cocktail ou un anniversaire, 3 à 4 semaines suffisent généralement selon la période.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-wrap">
+    <div>© <span id="year"></span> JN Événement. Tous droits réservés.</div>
+    <div>Hygiène HACCP | Traiteur événementiel — Perpignan & alentours</div>
+  </div>
+</footer>
+
+<div class="mobile-action-bar">
+  <a href="tel:0600000000" class="call-btn">📞 Appeler</a>
+  <a href="contact.html" class="devis-btn">📝 Devis gratuit</a>
+</div>
+
+<!-- ASSISTANT / CHAT INTELLIGENT -->
+<button class="assist-toggle" id="assist-toggle" aria-label="Ouvrir l'assistant">💬</button>
+<div class="assist-panel" id="assist-panel">
+  <div class="assist-header">
+    <span class="dot"></span>
+    <div>
+      <strong>Assistant JN Événement</strong>
+      <span>Répond à vos questions instantanément</span>
+    </div>
+  </div>
+  <div class="assist-messages" id="assist-messages">
+    <div class="assist-msg bot">Bonjour 👋 Je suis l'assistant de JN Événement. Posez-moi une question (devis, menus, allergies, délais, zone d'intervention...) ou choisissez une suggestion ci-dessous.</div>
+  </div>
+  <div class="assist-suggestions" id="assist-suggestions">
+    <button type="button" data-q="Le devis est gratuit ?">💰 Devis gratuit ?</button>
+    <button type="button" data-q="Quels sont vos menus ?">🍽️ Vos menus ?</button>
+    <button type="button" data-q="Quelle est votre zone d'intervention ?">📍 Zone d'intervention</button>
+    <button type="button" data-q="Pouvez-vous gérer les allergies ?">🌾 Allergies ?</button>
+  </div>
+  <div class="assist-input-row">
+    <input type="text" id="assist-input" placeholder="Écrivez votre question...">
+    <button type="button" id="assist-send" aria-label="Envoyer">➤</button>
+  </div>
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  const menuBtn = document.getElementById('menu-btn');
+  const navMenu = document.getElementById('nav-menu');
+  let jcSavedScrollY = 0;
+  function jcLockPageScroll() {
+    jcSavedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.documentElement.style.overscrollBehavior = 'none';
+    document.body.style.position = 'fixed';
+    document.body.style.top = (-jcSavedScrollY) + 'px';
+    document.body.style.left = '0'; document.body.style.right = '0'; document.body.style.width = '100%';
+  }
+  function jcUnlockPageScroll() {
+    document.documentElement.style.overscrollBehavior = '';
+    document.body.style.position = ''; document.body.style.top = ''; document.body.style.left = '';
+    document.body.style.right = ''; document.body.style.width = '';
+    window.scrollTo(0, jcSavedScrollY);
+  }
+  menuBtn.addEventListener('click', () => {
+    const isOpen = navMenu.classList.toggle('active');
+    menuBtn.textContent = isOpen ? '✕' : '☰';
+    if (isOpen) { jcLockPageScroll(); } else { jcUnlockPageScroll(); }
+  });
+  navMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => { navMenu.classList.remove('active'); menuBtn.textContent = '☰'; jcUnlockPageScroll(); });
+  });
+  window.addEventListener('pageshow', () => { navMenu.classList.remove('active'); menuBtn.textContent = '☰'; jcUnlockPageScroll(); });
+
+  document.querySelectorAll('.faq-question').forEach(q => {
+    q.addEventListener('click', () => { q.parentElement.classList.toggle('active'); });
+  });
+
+  // ==========================================================
+  // RÉSERVATION DE CRÉNEAU
+  // ==========================================================
+  (function initBooking(){
+    const datesEl = document.getElementById('booking-dates');
+    const summaryEl = document.getElementById('booking-summary');
+    const dateInput = document.getElementById('booking-date-input');
+    const submitBtn = document.getElementById('booking-submit');
+    if (!datesEl) return;
+
+    let selectedDate = null;
+
+    function buildDates(){
+      const days = [];
+      let cursor = new Date();
+      cursor.setDate(cursor.getDate() + 1);
+      while (days.length < 30) {
+        days.push(new Date(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      return days;
+    }
+    function renderDates(){
+      const days = buildDates();
+      datesEl.innerHTML = '';
+      days.forEach(d => {
+        const chip = document.createElement('div');
+        chip.className = 'date-chip';
+        chip.innerHTML = `<span class="dow">${d.toLocaleDateString('fr-FR', { weekday: 'short' })}</span><span class="dom">${d.getDate()}</span><span class="mon">${d.toLocaleDateString('fr-FR', { month: 'short' })}</span>`;
+        chip.addEventListener('click', () => selectDate(d, chip));
+        datesEl.appendChild(chip);
+      });
+    }
+    function selectDate(date, chip){
+      selectedDate = date;
+      datesEl.querySelectorAll('.date-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      const dateLabel = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      dateInput.value = dateLabel;
+      summaryEl.innerHTML = `📅 Jour demandé : <strong>${dateLabel}</strong>. Ce jour n'est pas encore confirmé — nous vérifions notre disponibilité et vous recontactons sous 48h. Complétez vos coordonnées ci-dessous.`;
+      summaryEl.classList.add('show');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Envoyer ma demande pour ce jour';
+    }
+    renderDates();
+  })();
+
+  // Recherche intelligente dans la FAQ
+  const faqSearchInput = document.getElementById('faq-search-input');
+  const faqNoResult = document.getElementById('faq-no-result');
+  if (faqSearchInput) {
+    faqSearchInput.addEventListener('input', () => {
+      const term = faqSearchInput.value.trim().toLowerCase();
+      let visibleCount = 0;
+      document.querySelectorAll('.faq-item').forEach(item => {
+        const match = term === '' || item.textContent.toLowerCase().includes(term);
+        item.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+      });
+      if (faqNoResult) faqNoResult.style.display = visibleCount === 0 ? 'block' : 'none';
+    });
+  }
+
+  // Pré-remplissage du formulaire depuis l'estimateur / les cartes menus
+  const params = new URLSearchParams(window.location.search);
+  const typeParam = params.get('type');
+  const guestsParam = params.get('guests');
+  const typeSelect = document.getElementById('type-evenement-select');
+  const messageTextarea = document.getElementById('message-textarea');
+  const guestsInput = document.querySelector('input[name="Nombre_Convives"]');
+  if (typeParam && typeSelect && [...typeSelect.options].some(o => o.value === typeParam)) {
+    typeSelect.value = typeParam;
+  }
+  if (guestsParam && guestsInput) guestsInput.value = guestsParam;
+  if (guestsParam && messageTextarea && !messageTextarea.value) {
+    messageTextarea.placeholder = `Ex: Bonjour, nous prévoyons environ ${guestsParam} convives pour notre événement...`;
+  }
+
+  // Si l'URL contient "?status=success", on masque le formulaire et on montre le message de réussite
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('status') === 'success') {
+    document.getElementById('main-contact-content').style.display = 'none';
+    document.getElementById('thankyou-block').classList.add('show');
+  }
+
+  // ==========================================================
+  // ASSISTANT INTELLIGENT — recherche par mots-clés (100% local)
+  // ==========================================================
+  const KNOWLEDGE_BASE = [
+    {
+      keywords: ['devis', 'gratuit', 'prix', 'tarif', 'coût', 'cout', 'combien'],
+      answer: "Nos devis sont 100% gratuits et sans engagement 💰. Utilisez notre estimateur de budget sur la page d'accueil pour un premier ordre d'idée selon le menu et le nombre de convives, puis contactez-nous pour un devis précis sous 48h."
+    },
+    {
+      keywords: ['menu', 'menus', 'formule', 'formules', 'plat', 'plats'],
+      answer: "Nous proposons 5 formules : Cocktail Apéritif, Dînatoire, Mariage Prestige, Anniversaire Buffet Familial et Brunch/Baptême 🍽️. Retrouvez le détail des plats et des prix sur notre page Nos Menus."
+    },
+    {
+      keywords: ['hygiène', 'hygiene', 'haccp', 'assurance', 'garantie', 'sécurité', 'securite'],
+      answer: "Oui, absolument 🛡️. Toute notre équipe est formée à la méthode HACCP et nous possédons les assurances obligatoires, dont la Responsabilité Civile Professionnelle."
+    },
+    {
+      keywords: ['zone', 'intervention', 'où', 'ou', 'secteur', 'ville', 'département', 'departement', 'pyrénées', 'pyrenees', 'perpignan'],
+      answer: "Nous intervenons à Perpignan et dans les communes alentours (66) 📍. Consultez la liste complète des villes desservies sur cette page."
+    },
+    {
+      keywords: ['délai', 'delai', 'temps', 'réserver', 'reserver', 'avance', 'quand'],
+      answer: "Pour un mariage, comptez 3 à 6 mois à l'avance ⏱️. Pour un cocktail ou un anniversaire, 3 à 4 semaines suffisent généralement selon la période de l'année."
+    },
+    {
+      keywords: ['allergie', 'allergies', 'intolérance', 'intolerance', 'végétarien', 'vegetarien', 'végan', 'vegan', 'sans gluten', 'régime', 'regime'],
+      answer: "Oui, tout à fait ✅ ! Signalez-nous les allergies, intolérances ou régimes particuliers lors de votre demande, nous adaptons systématiquement les recettes concernées."
+    },
+    {
+      keywords: ['livraison', 'livrer', 'service', 'serveur', 'serveurs', 'sur place'],
+      answer: "La livraison et la mise en place sont toujours incluses 🚚. Le service en salle (serveurs) est disponible en option selon la formule et le nombre de convives."
+    },
+    {
+      keywords: ['mariage', 'noce', 'noces'],
+      answer: "Notre Menu Mariage Prestige propose un repas assis en 4 services avec dressage soigné et service en salle 💍. Le détail est disponible sur notre page Nos Menus."
+    },
+    {
+      keywords: ['anniversaire', 'fête', 'fete', 'famille'],
+      answer: "Notre Menu Anniversaire Buffet Familial est pensé pour toutes les générations : quiches, plat unique convivial et gâteau personnalisable 🎉."
+    },
+    {
+      keywords: ['cocktail', 'apéritif', 'aperitif', "vin d'honneur"],
+      answer: "Notre Menu Cocktail Apéritif propose 8 pièces salées et sucrées par personne, dressées sur plateaux — idéal pour un vin d'honneur ou un afterwork 🥂."
+    },
+    {
+      keywords: ['contact', 'téléphone', 'telephone', 'appeler', 'numéro', 'numero', 'joindre'],
+      answer: "Vous pouvez nous appeler directement au 06 00 00 00 00 📞 (du lundi au vendredi, 8h-18h30) ou remplir le formulaire ci-dessus pour être recontacté sous 48h."
+    },
+    {
+      keywords: ['horaire', 'ouvert', 'disponible', 'samedi', 'weekend'],
+      answer: "Nous sommes disponibles du lundi au vendredi de 8h00 à 18h30, et le samedi sur rendez-vous pour les dégustations ⏱️."
+    },
+    {
+      keywords: ['bonjour', 'salut', 'hello', 'bonsoir'],
+      answer: "Bonjour 👋 ! Comment puis-je vous aider ? Vous pouvez me parler de votre événement, des menus, des prix ou de la zone d'intervention."
+    },
+    {
+      keywords: ['merci', 'super', 'top', 'parfait'],
+      answer: "Avec plaisir 😊 ! N'hésitez pas si vous avez d'autres questions, ou remplissez le formulaire ci-dessus pour recevoir votre devis gratuit."
+    },
+  ];
+
+  const FALLBACK_ANSWER = "Je n'ai pas la réponse exacte à cette question 🤔. Le plus simple : appelez-nous directement au <a href=\"tel:0600000000\" style=\"color:var(--accent); font-weight:700;\">06 00 00 00 00</a>, ou remplissez le formulaire ci-dessus pour qu'on vous recontacte sous 48h.";
+
+  function findAnswer(question){
+    const q = question.toLowerCase();
+    let bestMatch = null, bestScore = 0;
+    KNOWLEDGE_BASE.forEach(entry => {
+      let score = 0;
+      entry.keywords.forEach(kw => { if (q.includes(kw)) score++; });
+      if (score > bestScore) { bestScore = score; bestMatch = entry; }
+    });
+    return bestMatch ? bestMatch.answer : FALLBACK_ANSWER;
+  }
+
+  const assistToggle = document.getElementById('assist-toggle');
+  const assistPanel = document.getElementById('assist-panel');
+  const assistMessages = document.getElementById('assist-messages');
+  const assistInput = document.getElementById('assist-input');
+  const assistSend = document.getElementById('assist-send');
+  const assistSuggestions = document.getElementById('assist-suggestions');
+
+  function addMessage(text, sender){
+    const msg = document.createElement('div');
+    msg.className = 'assist-msg ' + sender;
+    msg.innerHTML = text;
+    assistMessages.appendChild(msg);
+    assistMessages.scrollTop = assistMessages.scrollHeight;
+  }
+  function handleQuestion(question){
+    if (!question.trim()) return;
+    addMessage(question, 'user');
+    assistInput.value = '';
+    setTimeout(() => { addMessage(findAnswer(question), 'bot'); }, 350);
+  }
+  if (assistToggle && assistPanel) {
+    assistToggle.addEventListener('click', () => {
+      assistPanel.classList.toggle('open');
+      if (assistPanel.classList.contains('open')) assistInput.focus();
+    });
+    assistSend.addEventListener('click', () => handleQuestion(assistInput.value));
+    assistInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleQuestion(assistInput.value); });
+    assistSuggestions.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => handleQuestion(btn.dataset.q));
+    });
+  }
+
+  window.addEventListener('load', () => {
+    document.body.classList.add('loaded');
+    const loader = document.getElementById('page-loader');
+    if (loader) loader.classList.add('hidden');
+  });
+  const revealEls = document.querySelectorAll('.reveal, .reveal-stagger');
+  if ('IntersectionObserver' in window && revealEls.length) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); io.unobserve(entry.target); } });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(el => io.observe(el));
+  } else { revealEls.forEach(el => el.classList.add('visible')); }
+</script>
+<script src="admin.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nos Engagements — JN Événement</title>
+<meta name="description" content="Fraîcheur des produits, hygiène HACCP, ponctualité : découvrez notre charte qualité traiteur.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Nos Engagements — JN Événement">
+<meta property="og:description" content="Fraîcheur des produits, hygiène HACCP, ponctualité : découvrez notre charte qualité traiteur.">
+<meta property="og:image" content="https://jn-evenement.vercel.app/og-image.png">
+<meta property="og:url" content="https://jn-evenement.vercel.app/engagements.html">
+<meta property="og:locale" content="fr_FR">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .grid-commitments { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; margin-top: 40px; }
+  .commitment-card { background: var(--panel); border: 1px solid var(--border); padding: 32px; border-radius: var(--radius-lg); box-shadow: 0 1px 2px rgba(33,27,18,0.03); transition:all .25s; }
+  .commitment-card:hover{ border-color: var(--accent); transform:translateY(-3px); box-shadow:0 14px 28px -14px rgba(33,27,18,0.18); }
+  .commitment-card h3 { font-size: 1.2rem; color: var(--text); margin-bottom: 4px; font-weight:700; }
+  .commitment-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
+
+  .tech-section { margin-top: 56px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px; }
+  .tech-table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; font-size: 0.92rem; }
+  .tech-table th { background: var(--text); color: #fff; padding: 12px 16px; font-weight: 600; font-family: var(--font-mono); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.4px; }
+  .tech-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+  .tech-table tr:hover { background: var(--bg-alt); }
+</style>
+<link rel="icon" type="image/png" sizes="512x512" href="favicon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+
+<body>
+<div id="page-loader">
+  <div class="loader-mark">JN <span>ÉVÉNEMENT</span> <span class="loader-dot"></span></div>
+</div>
+
+<header>
+  <div class="nav wrap">
+    <div class="brand" id="brand-logo"><img src="img/logo.png" alt="Jennifer Événementiel" class="brand-logo-img"></div>
+    <ul id="nav-menu">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="menus.html">Nos Menus</a></li>
+      <li><a href="engagements.html" class="active">Nos Engagements</a></li>
+      <li><a href="certifications.html">Certifications</a></li>
+      <li><a href="realisations.html">Photos</a></li>
+      <li><a href="contact.html">Contact &amp; Devis</a></li>
+    </ul>
+    <a href="contact.html" class="btn btn-primary header-btn">Devis sous 48h</a>
+    <button class="menu-toggle" id="menu-btn">☰</button>
+  </div>
+</header>
+
+<section class="section" style="margin-top: 40px;">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow" style="justify-content:center;">Charte qualité</div>
+      <h2>Notre Charte Qualité &amp; Engagements</h2>
+      <p>Parce que la réussite d'un événement se joue dans les détails, nous appliquons des règles strictes sur chacune de nos prestations.</p>
+    </div>
+
+    <div class="grid-commitments reveal-stagger">
+      <div class="commitment-card">
+        <div class="icon-badge"><svg viewBox="0 0 24 24"><path d="M12 3l7 3.2v5.3c0 4.6-3 8.6-7 9.5-4-.9-7-4.9-7-9.5V6.2L12 3z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h3>Hygiène HACCP</h3>
+        <p>Toute notre production respecte la méthode HACCP : traçabilité, chaîne du froid, contrôle des DLC. Vous êtes serein sur la sécurité alimentaire.</p>
+      </div>
+      <div class="commitment-card">
+        <div class="icon-badge"><svg viewBox="0 0 24 24"><rect x="3" y="10" width="18" height="4" rx="1"/><line x1="7" y1="10" x2="7" y2="14"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="17" y1="10" x2="17" y2="14"/></svg></div>
+        <h3>Fraîcheur &amp; Saisonnalité</h3>
+        <p>Nos plats sont préparés à partir de produits frais, en privilégiant les producteurs locaux et les recettes de saison.</p>
+      </div>
+      <div class="commitment-card">
+        <div class="icon-badge"><svg viewBox="0 0 24 24"><path d="M5 3v3M3.5 4.5h3M14 4l1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/><path d="M6 17l6-11 6 11z"/><line x1="9.5" y1="11.5" x2="14.5" y2="11.5"/></svg></div>
+        <h3>Ponctualité &amp; Propreté</h3>
+        <p>Livraison à l'heure convenue, installation soignée et rangement complet en fin de prestation.</p>
+      </div>
+    </div>
+
+    <!-- ADAPTATIONS SELON CONTRAINTES ALIMENTAIRES -->
+    <div class="tech-section reveal">
+      <h3 style="margin-top:0; color:var(--text);">Adaptation à vos contraintes &amp; préférences</h3>
+      <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom: 0;">Chaque convive compte : nous adaptons nos recettes selon les besoins exprimés lors de votre commande.</p>
+
+      <table class="tech-table">
+        <thead>
+          <tr>
+            <th>Besoin / Contrainte</th>
+            <th>Adaptation proposée</th>
+            <th>Avantage Client</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Besoin"><strong>Allergies &amp; intolérances</strong></td>
+            <td data-label="Adaptation">Fiches allergènes fournies pour chaque plat, recettes adaptées sur demande (sans gluten, sans lactose...).</td>
+            <td data-label="Avantage">Tranquillité pour vous et vos invités.</td>
+          </tr>
+          <tr>
+            <td data-label="Besoin"><strong>Régimes végétarien / végan</strong></td>
+            <td data-label="Adaptation">Déclinaisons végétariennes et véganes disponibles sur chaque formule, en nombre de portions ajustable.</td>
+            <td data-label="Avantage">Un menu inclusif pour tous vos invités.</td>
+          </tr>
+          <tr>
+            <td data-label="Besoin"><strong>Enfants</strong></td>
+            <td data-label="Adaptation">Menu enfant simplifié et portions adaptées, à tarif réduit.</td>
+            <td data-label="Avantage">Des petits convives ravis, un budget maîtrisé.</td>
+          </tr>
+          <tr>
+            <td data-label="Besoin"><strong>Grand nombre de convives</strong></td>
+            <td data-label="Adaptation">Renfort d'équipe et matériel de maintien en température dimensionnés selon l'effectif.</td>
+            <td data-label="Avantage">Un service fluide même au-delà de 100 convives.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-wrap">
+    <div>© <span id="year"></span> JN Événement. Tous droits réservés.</div>
+    <div>Hygiène HACCP | Traiteur événementiel — Perpignan & alentours</div>
+  </div>
+</footer>
+
+<div class="mobile-action-bar">
+  <a href="tel:0600000000" class="call-btn">📞 Appeler</a>
+  <a href="contact.html" class="devis-btn">📝 Devis gratuit</a>
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  const menuBtn = document.getElementById('menu-btn');
+  const navMenu = document.getElementById('nav-menu');
+  let jcSavedScrollY = 0;
+  function jcLockPageScroll() {
+    jcSavedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.documentElement.style.overscrollBehavior = 'none';
+    document.body.style.position = 'fixed';
+    document.body.style.top = (-jcSavedScrollY) + 'px';
+    document.body.style.left = '0'; document.body.style.right = '0'; document.body.style.width = '100%';
+  }
+  function jcUnlockPageScroll() {
+    document.documentElement.style.overscrollBehavior = '';
+    document.body.style.position = ''; document.body.style.top = ''; document.body.style.left = '';
+    document.body.style.right = ''; document.body.style.width = '';
+    window.scrollTo(0, jcSavedScrollY);
+  }
+  menuBtn.addEventListener('click', () => {
+    const isOpen = navMenu.classList.toggle('active');
+    menuBtn.textContent = isOpen ? '✕' : '☰';
+    if (isOpen) { jcLockPageScroll(); } else { jcUnlockPageScroll(); }
+  });
+  navMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => { navMenu.classList.remove('active'); menuBtn.textContent = '☰'; jcUnlockPageScroll(); });
+  });
+  window.addEventListener('pageshow', () => { navMenu.classList.remove('active'); menuBtn.textContent = '☰'; jcUnlockPageScroll(); });
+  window.addEventListener('load', () => {
+    document.body.classList.add('loaded');
+    const loader = document.getElementById('page-loader');
+    if (loader) loader.classList.add('hidden');
+  });
+  const revealEls = document.querySelectorAll('.reveal, .reveal-stagger');
+  if ('IntersectionObserver' in window && revealEls.length) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); io.unobserve(entry.target); } });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(el => io.observe(el));
+  } else { revealEls.forEach(el => el.classList.add('visible')); }
+</script>
+<script src="admin.js" defer></script>
+</body>
+
+</html>

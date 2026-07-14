@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nos Menus — JN Événement</title>
+<meta name="description" content="Découvrez nos formules traiteur : cocktail, dînatoire, mariage prestige, anniversaire et brunch. Prix par personne et à la carte.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Nos Menus — JN Événement">
+<meta property="og:description" content="Découvrez nos formules traiteur : cocktail, dînatoire, mariage prestige, anniversaire et brunch.">
+<meta property="og:image" content="https://jn-evenement.vercel.app/og-image.png">
+<meta property="og:url" content="https://jn-evenement.vercel.app/menus.html">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; margin-top: 40px; }
+  .menu-card { background: var(--panel); border: 1px solid var(--border); padding: 32px; border-radius: var(--radius-lg); box-shadow: 0 1px 2px rgba(33,27,18,0.03); transition:all .25s; display:flex; flex-direction:column; }
+  .menu-card:hover{ border-color: var(--accent); transform:translateY(-3px); box-shadow:0 14px 28px -14px rgba(33,27,18,0.18); }
+  .menu-card h3 { color: var(--text); margin-bottom: 6px; font-size: 1.25rem; font-weight:700; }
+  .menu-card .menu-tagline { color: var(--accent); font-size:0.85rem; font-weight:600; margin-bottom:14px; }
+  .menu-card p.menu-desc { color: var(--text-muted); font-size:0.94rem; margin-bottom:20px; flex:1; }
+  .menu-card .menu-price { font-family: var(--font-mono); font-size:1.5rem; font-weight:700; color:var(--text); margin-bottom:4px; }
+  .menu-card .menu-price span { font-size:0.85rem; font-weight:500; color:var(--text-muted); }
+  .menu-card .menu-min { font-size:0.78rem; color:var(--text-muted); margin-bottom:18px; }
+  .menu-card .btn { align-self:flex-start; }
+</style>
+<link rel="icon" type="image/png" sizes="512x512" href="favicon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+
+<body>
+<div id="page-loader">
+  <div class="loader-mark">JN <span>ÉVÉNEMENT</span> <span class="loader-dot"></span></div>
+</div>
+
+<header>
+  <div class="nav wrap">
+    <div class="brand" id="brand-logo"><img src="img/logo.png" alt="Jennifer Événementiel" class="brand-logo-img"></div>
+    <ul id="nav-menu">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="menus.html" class="active">Nos Menus</a></li>
+      <li><a href="engagements.html">Nos Engagements</a></li>
+      <li><a href="certifications.html">Certifications</a></li>
+      <li><a href="realisations.html">Photos</a></li>
+      <li><a href="contact.html">Contact &amp; Devis</a></li>
+    </ul>
+    <a href="contact.html" class="btn btn-primary header-btn">Devis sous 48h</a>
+    <button class="menu-toggle" id="menu-btn">☰</button>
+  </div>
+</header>
+
+<section class="section" style="margin-top: 40px;">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow" style="justify-content:center;">Nos formules</div>
+      <h2>Nos Menus</h2>
+      <p>Chaque formule est modulable : nombre de convives, options à la carte et personnalisation selon votre événement. Cliquez sur un menu pour voir le détail des plats et leurs prix.</p>
+    </div>
+
+    <div class="menu-grid reveal-stagger" id="menu-grid"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-wrap">
+    <div>© <span id="year"></span> JN Événement. Tous droits réservés.</div>
+    <div>Hygiène HACCP | Traiteur événementiel — Perpignan & alentours</div>
+  </div>
+</footer>
+
+<div class="mobile-action-bar">
+  <a href="tel:0600000000" class="call-btn">📞 Appeler</a>
+  <a href="contact.html" class="devis-btn">📝 Devis gratuit</a>
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  const menuBtn = document.getElementById('menu-btn');
+  const navMenu = document.getElementById('nav-menu');
+  let jcSavedScrollY = 0;
+  function jcLockPageScroll() {
+    jcSavedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.documentElement.style.overscrollBehavior = 'none';
+    document.body.style.position = 'fixed';
+    document.body.style.top = (-jcSavedScrollY) + 'px';
+    document.body.style.left = '0'; document.body.style.right = '0'; document.body.style.width = '100%';
+  }
+  function jcUnlockPageScroll() {
+    document.documentElement.style.overscrollBehavior = '';
+    document.body.style.position = ''; document.body.style.top = ''; document.body.style.left = '';
+    document.body.style.right = ''; document.body.style.width = '';
+    window.scrollTo(0, jcSavedScrollY);
+  }
+  menuBtn.addEventListener('click', () => {
+    const isOpen = navMenu.classList.toggle('active');
+    menuBtn.textContent = isOpen ? '✕' : '☰';
+    if (isOpen) { jcLockPageScroll(); } else { jcUnlockPageScroll(); }
+  });
+  navMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => { navMenu.classList.remove('active'); menuBtn.textContent = '☰'; jcUnlockPageScroll(); });
+  });
+  window.addEventListener('pageshow', () => { navMenu.classList.remove('active'); menuBtn.textContent = '☰'; jcUnlockPageScroll(); });
+  window.addEventListener('load', () => {
+    document.body.classList.add('loaded');
+    const loader = document.getElementById('page-loader');
+    if (loader) loader.classList.add('hidden');
+  });
+  const revealEls = document.querySelectorAll('.reveal, .reveal-stagger');
+  if ('IntersectionObserver' in window && revealEls.length) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); io.unobserve(entry.target); } });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(el => io.observe(el));
+  } else { revealEls.forEach(el => el.classList.add('visible')); }
+
+  function renderMenuGrid() {
+    const grid = document.getElementById('menu-grid');
+    const menus = window.JN.getMenus();
+    grid.innerHTML = menus.map(m => `
+      <div class="menu-card" id="${m.id}">
+        ${m.imageUrl ? `<img src="${m.imageUrl}" alt="${m.title}" style="width:calc(100% + 64px); margin:-32px -32px 20px; height:180px; object-fit:cover; border-radius:var(--radius-lg) var(--radius-lg) 0 0;">` : ''}
+        <h3>${m.title}</h3>
+        <div class="menu-tagline">${m.tagline || ''}</div>
+        <p class="menu-desc">${m.description || ''}</p>
+        <div class="menu-price">${window.JN.formatEuro(m.pricePerPerson)} <span>/ personne</span></div>
+        <div class="menu-min">Minimum ${m.minGuests} convives</div>
+        <a href="menu.html?id=${encodeURIComponent(m.id)}" class="btn btn-primary">Voir le détail &amp; les prix</a>
+      </div>`).join('');
+
+    // Défilement vers l'ancre si présente dans l'URL (ex: menus.html#mariage-prestige)
+    if (location.hash) {
+      const target = document.querySelector(location.hash);
+      if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+    }
+  }
+  document.addEventListener('jn:menus-updated', renderMenuGrid);
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.JN) window.JN.ready.then(renderMenuGrid);
+  });
+  if (window.JN) window.JN.ready.then(renderMenuGrid);
+</script>
+<script src="admin.js" defer></script>
+</body>
+
+</html>
