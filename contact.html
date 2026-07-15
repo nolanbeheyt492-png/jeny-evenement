@@ -16,10 +16,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-  .contact-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; margin-top: 40px; }
+  .contact-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 40px; margin-top: 40px; }
+  .contact-wrapper > * { min-width: 0; }
   .contact-info-box { background: var(--text); color: white; padding: 40px; border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 22px; }
+  @media (max-width: 600px) {
+    .contact-wrapper { gap: 20px; }
+    .contact-info-box, .form-box { padding: 24px; }
+  }
   .contact-info-box h3 { color: white; font-size: 1.3rem; }
-  .info-link { color: white; text-decoration: none; font-size: 1.2rem; font-weight: bold; display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-mono); }
+  .info-link { color: white; text-decoration: none; font-size: 1.2rem; font-weight: bold; display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-mono); max-width: 100%; word-break: break-word; overflow-wrap: anywhere; }
   .info-link:hover { color: var(--accent); }
 
   .faq-container { max-width: 850px; margin: 60px auto 0 auto; display: flex; flex-direction: column; gap: 14px; }
