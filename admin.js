@@ -14,6 +14,8 @@
   let supabase = null;
   let menusCache = [];
   let photosCache = [];
+  let testimonialsCache = [];
+  let settingsCache = null;
 
   // Charge la librairie supabase-js depuis un CDN, puis initialise le client
   function loadSupabase() {
@@ -34,10 +36,10 @@
   // Menus de démonstration — insérés automatiquement UNE SEULE FOIS si la base
   // est vide, pour donner un aperçu visuel. Modifiables/supprimables depuis l'admin.
   const DEMO_MENUS = [
-    { id: 'demo-cocktail', title: '[EXEMPLE] Cocktail Dînatoire', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 28, min_guests: 15, includes: ['Pièces salées & sucrées', 'Service inclus'], items: [], sort_order: 0, image_url: '' },
-    { id: 'demo-mariage', title: '[EXEMPLE] Mariage Prestige', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 65, min_guests: 40, includes: ['Entrée, plat, dessert', 'Pièce montée'], items: [], sort_order: 1, image_url: '' },
-    { id: 'demo-anniversaire', title: '[EXEMPLE] Anniversaire', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 22, min_guests: 10, includes: ['Buffet complet', 'Gâteau sur demande'], items: [], sort_order: 2, image_url: '' },
-    { id: 'demo-brunch', title: '[EXEMPLE] Brunch', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 18, min_guests: 8, includes: ['Sucré & salé', 'Boissons chaudes incluses'], items: [], sort_order: 3, image_url: '' }
+    { id: 'demo-cocktail', title: '[EXEMPLE] Cocktail Dînatoire', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 28, min_guests: 15, includes: ['Pièces salées & sucrées', 'Service inclus'], items: [], sort_order: 0 },
+    { id: 'demo-mariage', title: '[EXEMPLE] Mariage Prestige', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 65, min_guests: 40, includes: ['Entrée, plat, dessert', 'Pièce montée'], items: [], sort_order: 1 },
+    { id: 'demo-anniversaire', title: '[EXEMPLE] Anniversaire', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 22, min_guests: 10, includes: ['Buffet complet', 'Gâteau sur demande'], items: [], sort_order: 2 },
+    { id: 'demo-brunch', title: '[EXEMPLE] Brunch', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 18, min_guests: 8, includes: ['Sucré & salé', 'Boissons chaudes incluses'], items: [], sort_order: 3 }
   ];
 
   async function fetchMenus() {
@@ -55,6 +57,58 @@
     return menusCache;
   }
 
+  const DEMO_TESTIMONIALS = [
+    { id: 'demo-t1', author: 'Martine R.', location: 'Perpignan', rating: 5, quote: '[EXEMPLE] Le menu mariage était sublime, tout le monde s\'est régalé. Le dressage était magnifique et l\'équipe très professionnelle.', sort_order: 0 },
+    { id: 'demo-t2', author: 'Thomas B.', location: 'Argelès-sur-Mer', rating: 5, quote: '[EXEMPLE] Devis clair et respecté au centime près. Le cocktail apéritif a fait l\'unanimité pour notre pot de départ.', sort_order: 1 },
+    { id: 'demo-t3', author: 'Isabelle F.', location: 'Céret', rating: 5, quote: '[EXEMPLE] Buffet dînatoire copieux et savoureux pour l\'anniversaire de ma fille : résultat impeccable et service à l\'heure.', sort_order: 2 }
+  ];
+
+  const DEFAULT_SETTINGS = {
+    id: 'site',
+    phone: '06 60 75 27 99',
+    email: 'jenniferevenement@gmail.com',
+    stat1_value: '150+',
+    stat1_label: 'Événements réalisés',
+    stat2_value: '2500+',
+    stat2_label: 'Convives servis',
+    stat3_value: '5.0★',
+    stat3_label: 'Note moyenne clients'
+  };
+
+  async function fetchSettings() {
+    if (!supabase) { settingsCache = settingsCache || DEFAULT_SETTINGS; return settingsCache; }
+    let { data, error } = await supabase.from('settings').select('*').eq('id', 'site').maybeSingle();
+    if (error) { console.error('Erreur chargement réglages:', error); settingsCache = settingsCache || DEFAULT_SETTINGS; return settingsCache; }
+    if (!data) {
+      await supabase.from('settings').insert(DEFAULT_SETTINGS);
+      data = DEFAULT_SETTINGS;
+    }
+    settingsCache = data;
+    fireUpdated('settings');
+    return settingsCache;
+  }
+
+  async function saveSettings(newSettings) {
+    const row = Object.assign({ id: 'site' }, newSettings);
+    const { error } = await supabase.from('settings').update(row).eq('id', 'site');
+    if (!error) { settingsCache = row; fireUpdated('settings'); }
+    return error;
+  }
+
+  async function fetchTestimonials() {
+    if (!supabase) return testimonialsCache;
+    let { data, error } = await supabase.from('testimonials').select('*').order('sort_order', { ascending: true });
+    if (error) { console.error('Erreur chargement avis:', error); return testimonialsCache; }
+    if ((!data || data.length === 0) && !sessionStorage.getItem('jn_demo_testimonials_seeded')) {
+      sessionStorage.setItem('jn_demo_testimonials_seeded', '1');
+      await supabase.from('testimonials').insert(DEMO_TESTIMONIALS);
+      const retry = await supabase.from('testimonials').select('*').order('sort_order', { ascending: true });
+      data = retry.data;
+    }
+    testimonialsCache = data || [];
+    fireUpdated('testimonials');
+    return testimonialsCache;
+  }
   async function fetchPhotos() {
     if (!supabase) return photosCache;
     const { data, error } = await supabase.from('photos').select('*').order('sort_order', { ascending: true });
@@ -74,8 +128,7 @@
       minGuests: row.min_guests,
       includes: row.includes || [],
       items: row.items || [],
-      sortOrder: row.sort_order || 0,
-      imageUrl: row.image_url || ''
+      sortOrder: row.sort_order || 0
     };
   }
   function menuToRow(m) {
@@ -88,8 +141,7 @@
       min_guests: m.minGuests,
       includes: m.includes || [],
       items: m.items || [],
-      sort_order: m.sortOrder || 0,
-      image_url: m.imageUrl || ''
+      sort_order: m.sortOrder || 0
     };
   }
 
@@ -98,6 +150,8 @@
     getMenus: function () { return menusCache; },
     getMenu: function (id) { return menusCache.find((m) => m.id === id) || null; },
     getPhotos: function () { return photosCache; },
+    getTestimonials: function () { return testimonialsCache; },
+    getSettings: function () { return settingsCache || DEFAULT_SETTINGS; },
     formatEuro: function (n) {
       return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n || 0);
     },
@@ -108,10 +162,67 @@
 
   window.JN.ready = loadSupabase().then((sb) => {
     supabase = sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    return Promise.all([fetchMenus(), fetchPhotos()]);
+    return Promise.all([fetchMenus(), fetchPhotos(), fetchTestimonials(), fetchSettings()]);
   }).catch((err) => {
     console.error('Supabase indisponible, le site fonctionne en mode dégradé.', err);
   });
+
+  // ---- Barre de progression de lecture (haut de page) --------------------
+  function initScrollProgress() {
+    const bar = document.getElementById('jn-scroll-progress');
+    if (!bar) return;
+    function update() {
+      const h = document.documentElement;
+      const scrollTop = h.scrollTop || document.body.scrollTop;
+      const scrollHeight = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+      const pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+      bar.style.width = pct + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
+
+  // ---- Applique le téléphone, l'email et les statistiques partout -------
+  function applyGlobalSettings() {
+    const s = window.JN.getSettings();
+    const phoneDigits = (s.phone || '').replace(/[^0-9+]/g, '');
+
+    // Liens tel: (bouton "Appeler" mobile, boutons d'appel, etc.)
+    document.querySelectorAll('a[href^="tel:"]').forEach((a) => { a.setAttribute('href', 'tel:' + phoneDigits); });
+    // Texte affiché du numéro (ex: page contact "Par téléphone : 06 ...")
+    document.querySelectorAll('[data-jn-phone-text]').forEach((el) => { el.textContent = s.phone; });
+    document.querySelectorAll('[data-jn-phone]').forEach((el) => { el.textContent = s.phone; });
+
+    // Liens mailto: et texte de l'email
+    if (s.email) {
+      document.querySelectorAll('a[href^="mailto:"]').forEach((a) => { a.setAttribute('href', 'mailto:' + s.email); });
+      document.querySelectorAll('[data-jn-email-text]').forEach((el) => { el.textContent = s.email; });
+    }
+
+    const stat1 = document.getElementById('jn-stat-1');
+    const stat2 = document.getElementById('jn-stat-2');
+    const stat3 = document.getElementById('jn-stat-3');
+    if (stat1) { stat1.querySelector('.jn-stat-value').textContent = s.stat1_value; stat1.querySelector('.jn-stat-label').textContent = s.stat1_label; }
+    if (stat2) { stat2.querySelector('.jn-stat-value').textContent = s.stat2_value; stat2.querySelector('.jn-stat-label').textContent = s.stat2_label; }
+    if (stat3) { stat3.querySelector('.jn-stat-value').textContent = s.stat3_value; stat3.querySelector('.jn-stat-label').textContent = s.stat3_label; }
+
+    // Duplique aussi les stats dans le bandeau défilant si présent
+    document.querySelectorAll('.jn-stats-marquee .jn-stat-value').forEach((el, i) => {
+      const vals = [s.stat1_value, s.stat2_value, s.stat3_value];
+      const labs = [s.stat1_label, s.stat2_label, s.stat3_label];
+      el.textContent = vals[i % 3];
+      const lab = el.parentElement.querySelector('.jn-stat-label');
+      if (lab) lab.textContent = labs[i % 3];
+    });
+
+    document.dispatchEvent(new CustomEvent('jn:stats-ready'));
+  }
+  document.addEventListener('jn:settings-updated', applyGlobalSettings);
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.JN) window.JN.ready.then(applyGlobalSettings);
+  });
+  if (window.JN) window.JN.ready.then(applyGlobalSettings);
 
   // ---- Header qui réagit au scroll + parallax léger du hero -------------
   function initPremiumScrollFx() {
@@ -235,9 +346,9 @@
 
     const style = document.createElement('style');
     style.textContent = `
-      #jn-admin-modal{ position:fixed; inset:0; z-index:10000; background:rgba(33,20,26,0.55); display:none; align-items:center; justify-content:center; padding:20px; }
+      #jn-admin-modal{ position:fixed; inset:0; height:100vh; height:100dvh; z-index:10000; background:rgba(33,20,26,0.55); display:none; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
       #jn-admin-modal.open{ display:flex; }
-      #jn-admin-box{ background:#fff; border-radius:20px; padding:36px; max-width:360px; width:100%; box-shadow:0 30px 60px -20px rgba(74,32,50,0.4); font-family:var(--font-body, sans-serif); }
+      #jn-admin-box{ background:#fff; border-radius:20px; padding:36px; max-width:360px; width:100%; max-height:90vh; max-height:90dvh; overflow-y:auto; box-shadow:0 30px 60px -20px rgba(74,32,50,0.4); font-family:var(--font-body, sans-serif); margin:auto; }
       #jn-admin-box h3{ font-family:var(--font-display, serif); color:var(--text, #4A2032); margin-bottom:6px; font-size:1.3rem; }
       #jn-admin-box p{ color:var(--text-muted, #8C5D6B); font-size:0.85rem; margin-bottom:18px; }
       #jn-admin-box input{ width:100%; padding:12px 14px; border:1px solid var(--border, #ddd); border-radius:10px; font-size:0.95rem; margin-bottom:12px; }
@@ -270,7 +381,7 @@
       document.getElementById('jn-admin-error').style.display = 'none';
     }
     modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
-    document.getElementById('jn-admin-cancel').addEventListener('click', close);
+    document.getElementById('jn-admin-cancel').addEventListener('click', () => { close(); if (window.jcUnlockPageScroll) window.jcUnlockPageScroll(); });
 
     async function attemptLogin() {
       const val = document.getElementById('jn-admin-pass').value;
@@ -292,11 +403,12 @@
 
   function openAdminDashboard() {
     let dash = document.getElementById('jn-admin-dash');
-    if (dash) { dash.classList.add('open'); dash.scrollTop = 0; renderAdminMenuList(); renderAdminPhotoList(); return; }
+    if (window.jcLockPageScroll) window.jcLockPageScroll();
+    if (dash) { dash.classList.add('open'); dash.scrollTop = 0; renderAdminMenuList(); renderAdminPhotoList(); renderAdminAvisList(); return; }
 
     const style = document.createElement('style');
     style.textContent = `
-      #jn-admin-dash{ position:fixed; inset:0; z-index:10001; background:#fff; display:none; align-items:flex-start; justify-content:center; padding:0; overflow-y:auto; }
+      #jn-admin-dash{ position:fixed; inset:0; height:100vh; height:100dvh; z-index:10001; background:#fff; display:none; align-items:flex-start; justify-content:center; padding:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
       #jn-admin-dash.open{ display:flex; }
       #jn-admin-panel{ background:#fff; padding:32px 32px 80px; max-width:1000px; width:100%; min-height:100vh; box-sizing:border-box; font-family:var(--font-body, sans-serif); }
       @media (min-width:700px){ #jn-admin-panel{ padding:48px 56px 100px; } }
@@ -311,10 +423,6 @@
       .jn-admin-tabpanel{ display:none; }
       .jn-admin-tabpanel.active{ display:block; }
       .jn-admin-menu-card{ border:1px solid var(--border,#eee); border-radius:14px; padding:18px; margin-bottom:14px; }
-      .jn-admin-menu-photo{ width:140px; flex-shrink:0; text-align:center; }
-      .jn-admin-menu-photo img{ width:140px; height:100px; object-fit:cover; border-radius:10px; display:block; margin-bottom:6px; border:1px solid var(--border,#eee); }
-      .jn-admin-menu-photo-empty{ width:140px; height:100px; border-radius:10px; background:#F4EDE8; color:var(--text-muted,#8C5D6B); font-size:0.75rem; display:flex; align-items:center; justify-content:center; margin-bottom:6px; }
-      .jn-menu-photo-btn{ font-size:0.72rem; padding:6px 8px; border-radius:8px; border:1px solid var(--border,#ddd); background:#fff; cursor:pointer; width:100%; }
       .jn-admin-menu-card .jn-row{ display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
       .jn-admin-menu-card label{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted,#8C5D6B); display:block; margin-bottom:4px; }
       .jn-admin-menu-card input, .jn-admin-menu-card textarea{ width:100%; padding:9px 10px; border:1px solid var(--border,#ddd); border-radius:8px; font-size:0.88rem; font-family:inherit; }
@@ -331,6 +439,17 @@
       .jn-photo-card button{ position:absolute; top:6px; right:6px; background:rgba(139,46,46,0.9); color:#fff; border:none; width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:0.8rem; }
       #jn-upload-zone{ border:2px dashed var(--border,#ddd); border-radius:14px; padding:28px; text-align:center; color:var(--text-muted,#8C5D6B); cursor:pointer; }
       #jn-upload-zone.dragover{ border-color:var(--accent,#D67A93); background:#FBF3F1; }
+      @media (max-width:600px){
+        #jn-admin-panel{ padding:18px 14px 90px; }
+        #jn-admin-panel .jn-admin-topbar{ margin:-18px -14px 0; padding:10px 14px 14px; flex-direction:column; align-items:stretch; gap:10px; }
+        #jn-admin-panel .jn-admin-topbar > div[style]{ justify-content:flex-end; }
+        .jn-admin-tabs{ overflow-x:auto; -webkit-overflow-scrolling:touch; flex-wrap:nowrap; scrollbar-width:none; }
+        .jn-admin-tabs::-webkit-scrollbar{ display:none; }
+        .jn-admin-tab{ flex-shrink:0; white-space:nowrap; padding:9px 12px; }
+        .jn-admin-menu-card .jn-row{ flex-direction:column; }
+        .jn-admin-field{ min-width:100%; }
+        .jn-admin-menu-actions button, #jn-admin-close, #jn-admin-logout{ min-height:40px; }
+      }
     `;
     document.head.appendChild(style);
 
@@ -352,6 +471,8 @@
         <div class="jn-admin-tabs">
           <div class="jn-admin-tab active" data-tab="menus">Menus</div>
           <div class="jn-admin-tab" data-tab="photos">Photos</div>
+          <div class="jn-admin-tab" data-tab="avis">Avis clients</div>
+          <div class="jn-admin-tab" data-tab="reglages">Réglages</div>
         </div>
         <div class="jn-admin-tabpanel active" id="jn-tab-menus">
           <div id="jn-admin-menu-list"></div>
@@ -362,14 +483,43 @@
           <input type="file" id="jn-photo-input" accept="image/*" multiple style="display:none;">
           <div class="jn-photo-grid" id="jn-admin-photo-grid" style="margin-top:18px;"></div>
         </div>
+        <div class="jn-admin-tabpanel" id="jn-tab-avis">
+          <div id="jn-admin-avis-list"></div>
+          <button id="jn-admin-add-avis-btn" type="button">+ Ajouter un avis</button>
+        </div>
+        <div class="jn-admin-tabpanel" id="jn-tab-reglages">
+          <p style="color:var(--text-muted,#8C5D6B); font-size:0.9rem; margin-bottom:18px;">Ces informations sont utilisées automatiquement sur tout le site : numéro affiché/appelé partout, et chiffres clés affichés sur la page d'accueil.</p>
+          <div class="jn-admin-menu-card">
+            <div class="jn-row">
+              <div class="jn-admin-field"><label>Numéro de téléphone</label><input type="text" id="jn-set-phone"></div>
+              <div class="jn-admin-field"><label>Adresse email</label><input type="email" id="jn-set-email"></div>
+            </div>
+            <div class="jn-row">
+              <div class="jn-admin-field"><label>Statistique 1 — valeur</label><input type="text" id="jn-set-s1v"></div>
+              <div class="jn-admin-field"><label>Statistique 1 — libellé</label><input type="text" id="jn-set-s1l"></div>
+            </div>
+            <div class="jn-row">
+              <div class="jn-admin-field"><label>Statistique 2 — valeur</label><input type="text" id="jn-set-s2v"></div>
+              <div class="jn-admin-field"><label>Statistique 2 — libellé</label><input type="text" id="jn-set-s2l"></div>
+            </div>
+            <div class="jn-row">
+              <div class="jn-admin-field"><label>Statistique 3 — valeur</label><input type="text" id="jn-set-s3v"></div>
+              <div class="jn-admin-field"><label>Statistique 3 — libellé</label><input type="text" id="jn-set-s3l"></div>
+            </div>
+            <div class="jn-admin-menu-actions">
+              <button class="jn-admin-save" type="button" id="jn-admin-save-settings">Enregistrer les réglages</button>
+            </div>
+          </div>
+        </div>
       </div>`;
     document.body.appendChild(dash);
 
-    dash.addEventListener('click', (e) => { if (e.target === dash) dash.classList.remove('open'); });
-    document.getElementById('jn-admin-close').addEventListener('click', () => dash.classList.remove('open'));
+    function closeDash() { dash.classList.remove('open'); if (window.jcUnlockPageScroll) window.jcUnlockPageScroll(); }
+    dash.addEventListener('click', (e) => { if (e.target === dash) closeDash(); });
+    document.getElementById('jn-admin-close').addEventListener('click', closeDash);
     document.getElementById('jn-admin-logout').addEventListener('click', async () => {
       await supabase.auth.signOut();
-      dash.classList.remove('open');
+      closeDash();
     });
 
     dash.querySelectorAll('.jn-admin-tab').forEach((tab) => {
@@ -383,9 +533,48 @@
 
     document.getElementById('jn-admin-add-btn').addEventListener('click', async () => {
       const newMenu = { id: 'menu-' + Date.now(), title: 'Nouveau menu', tagline: '', description: '', pricePerPerson: 20, minGuests: 10, includes: [], items: [], sortOrder: menusCache.length };
-      await supabase.from('menus').insert(menuToRow(newMenu));
+      const { error } = await supabase.from('menus').insert(menuToRow(newMenu));
+      if (error) { alert('Erreur lors de l\'ajout : ' + error.message); return; }
       await fetchMenus();
       renderAdminMenuList();
+    });
+
+    document.getElementById('jn-admin-add-avis-btn').addEventListener('click', async () => {
+      const newAvis = { id: 'avis-' + Date.now(), author: 'Nouveau client', location: '', rating: 5, quote: 'Avis à modifier...', sort_order: testimonialsCache.length };
+      const { error } = await supabase.from('testimonials').insert(newAvis);
+      if (error) { alert('Erreur lors de l\'ajout : ' + error.message); return; }
+      await fetchTestimonials();
+      renderAdminAvisList();
+    });
+
+    function fillSettingsForm() {
+      const s = window.JN.getSettings();
+      document.getElementById('jn-set-phone').value = s.phone || '';
+      document.getElementById('jn-set-email').value = s.email || '';
+      document.getElementById('jn-set-s1v').value = s.stat1_value || '';
+      document.getElementById('jn-set-s1l').value = s.stat1_label || '';
+      document.getElementById('jn-set-s2v').value = s.stat2_value || '';
+      document.getElementById('jn-set-s2l').value = s.stat2_label || '';
+      document.getElementById('jn-set-s3v').value = s.stat3_value || '';
+      document.getElementById('jn-set-s3l').value = s.stat3_label || '';
+    }
+    fillSettingsForm();
+    document.getElementById('jn-admin-save-settings').addEventListener('click', async () => {
+      const error = await saveSettings({
+        phone: document.getElementById('jn-set-phone').value,
+        email: document.getElementById('jn-set-email').value,
+        stat1_value: document.getElementById('jn-set-s1v').value,
+        stat1_label: document.getElementById('jn-set-s1l').value,
+        stat2_value: document.getElementById('jn-set-s2v').value,
+        stat2_label: document.getElementById('jn-set-s2l').value,
+        stat3_value: document.getElementById('jn-set-s3v').value,
+        stat3_label: document.getElementById('jn-set-s3l').value
+      });
+      if (error) { alert('Erreur lors de l\'enregistrement : ' + error.message); return; }
+      applyGlobalSettings();
+      const msg = document.getElementById('jn-admin-saved-msg');
+      msg.style.display = 'block';
+      setTimeout(() => { msg.style.display = 'none'; }, 2000);
     });
 
     // Upload de photos
@@ -416,6 +605,7 @@
     dash.scrollTop = 0;
     renderAdminMenuList();
     renderAdminPhotoList();
+    renderAdminAvisList();
   }
 
   function renderAdminMenuList() {
@@ -424,12 +614,6 @@
     list.innerHTML = menusCache.map((m, i) => `
       <div class="jn-admin-menu-card" data-idx="${i}">
         <div class="jn-row">
-          <div class="jn-admin-menu-photo">
-            <img src="${m.imageUrl || ''}" style="${m.imageUrl ? '' : 'display:none;'}" alt="">
-            <div class="jn-admin-menu-photo-empty" style="${m.imageUrl ? 'display:none;' : ''}">Aucune photo</div>
-            <input type="file" accept="image/*" class="jn-menu-photo-input" style="display:none;">
-            <button type="button" class="jn-menu-photo-btn">📷 ${m.imageUrl ? 'Changer' : 'Ajouter'} la photo</button>
-          </div>
           <div style="flex:1;">
             <div class="jn-row">
               <div class="jn-admin-field"><label>Titre</label><input type="text" data-field="title" value="${(m.title || '').replace(/"/g, '&quot;')}"></div>
@@ -452,29 +636,14 @@
 
     list.querySelectorAll('.jn-admin-menu-card').forEach((card) => {
       const idx = parseInt(card.dataset.idx, 10);
-      const photoBtn = card.querySelector('.jn-menu-photo-btn');
-      const photoInput = card.querySelector('.jn-menu-photo-input');
-      photoBtn.addEventListener('click', () => photoInput.click());
-      photoInput.addEventListener('change', async () => {
-        const file = photoInput.files[0];
-        if (!file) return;
-        photoBtn.textContent = 'Envoi…';
-        const path = 'menus/' + Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-        const { error: upErr } = await supabase.storage.from(PHOTOS_BUCKET).upload(path, file);
-        if (upErr) { alert('Erreur upload : ' + upErr.message); photoBtn.textContent = '📷 Ajouter la photo'; return; }
-        const { data: pub } = supabase.storage.from(PHOTOS_BUCKET).getPublicUrl(path);
-        const m = Object.assign({}, menusCache[idx], { imageUrl: pub.publicUrl });
-        await supabase.from('menus').update(menuToRow(m)).eq('id', m.id);
-        await fetchMenus();
-        renderAdminMenuList();
-      });
       card.querySelector('.jn-admin-save').addEventListener('click', async () => {
         const m = Object.assign({}, menusCache[idx]);
         card.querySelectorAll('[data-field]').forEach((f) => {
           const field = f.dataset.field;
           m[field] = (field === 'pricePerPerson' || field === 'minGuests') ? parseFloat(f.value) || 0 : f.value;
         });
-        await supabase.from('menus').update(menuToRow(m)).eq('id', m.id);
+        const { error } = await supabase.from('menus').update(menuToRow(m)).eq('id', m.id);
+        if (error) { alert('Erreur lors de l\'enregistrement : ' + error.message); return; }
         await fetchMenus();
         const msg = document.getElementById('jn-admin-saved-msg');
         msg.style.display = 'block';
@@ -482,7 +651,8 @@
       });
       card.querySelector('.jn-admin-delete').addEventListener('click', async () => {
         if (!confirm('Supprimer ce menu ?')) return;
-        await supabase.from('menus').delete().eq('id', menusCache[idx].id);
+        const { error } = await supabase.from('menus').delete().eq('id', menusCache[idx].id);
+        if (error) { alert('Erreur lors de la suppression : ' + error.message); return; }
         await fetchMenus();
         renderAdminMenuList();
       });
@@ -510,9 +680,69 @@
     });
   }
 
+  function renderAdminAvisList() {
+    const list = document.getElementById('jn-admin-avis-list');
+    if (!list) return;
+    list.innerHTML = testimonialsCache.map((t, i) => `
+      <div class="jn-admin-menu-card" data-idx="${i}">
+        <div class="jn-row">
+          <div class="jn-admin-field"><label>Auteur</label><input type="text" data-field="author" value="${(t.author || '').replace(/"/g, '&quot;')}"></div>
+          <div class="jn-admin-field"><label>Ville</label><input type="text" data-field="location" value="${(t.location || '').replace(/"/g, '&quot;')}"></div>
+          <div class="jn-admin-field" style="max-width:110px;"><label>Note /5</label><input type="number" min="1" max="5" data-field="rating" value="${t.rating || 5}"></div>
+        </div>
+        <div class="jn-row">
+          <div class="jn-admin-field" style="min-width:100%;"><label>Avis</label><textarea rows="2" data-field="quote">${t.quote || ''}</textarea></div>
+        </div>
+        <div class="jn-admin-menu-actions">
+          <button class="jn-admin-save" type="button">Enregistrer</button>
+          <button class="jn-admin-delete" type="button">Supprimer</button>
+        </div>
+      </div>`).join('') || '<p style="color:var(--text-muted,#8C5D6B); font-size:0.9rem;">Aucun avis pour le moment.</p>';
+
+    list.querySelectorAll('.jn-admin-menu-card').forEach((card) => {
+      const idx = parseInt(card.dataset.idx, 10);
+      card.querySelector('.jn-admin-save').addEventListener('click', async () => {
+        const t = Object.assign({}, testimonialsCache[idx]);
+        card.querySelectorAll('[data-field]').forEach((f) => {
+          const field = f.dataset.field;
+          t[field] = field === 'rating' ? (parseInt(f.value, 10) || 5) : f.value;
+        });
+        const { error } = await supabase.from('testimonials').update(t).eq('id', t.id);
+        if (error) { alert('Erreur lors de l\'enregistrement : ' + error.message); return; }
+        await fetchTestimonials();
+        const msg = document.getElementById('jn-admin-saved-msg');
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 2000);
+      });
+      card.querySelector('.jn-admin-delete').addEventListener('click', async () => {
+        if (!confirm('Supprimer cet avis ?')) return;
+        const { error } = await supabase.from('testimonials').delete().eq('id', testimonialsCache[idx].id);
+        if (error) { alert('Erreur lors de la suppression : ' + error.message); return; }
+        await fetchTestimonials();
+        renderAdminAvisList();
+      });
+    });
+  }
+
+  function scrollToTopThen(callback) {
+    const alreadyTop = (window.scrollY || window.pageYOffset || 0) < 4;
+    if (alreadyTop) { callback(); return; }
+    const onScrollEnd = () => { window.removeEventListener('scroll', check); callback(); };
+    let settleTimer = null;
+    function check() {
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(onScrollEnd, 60);
+    }
+    window.addEventListener('scroll', check, { passive: true });
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    // Filet de sécurité si l'événement scroll ne se déclenche pas (déjà en haut, etc.)
+    setTimeout(onScrollEnd, 500);
+  }
+
   async function initAdminAccess() {
     const brand = document.getElementById('brand-logo');
     if (!brand) return;
+    brand.style.touchAction = 'manipulation';
     await window.JN.ready;
 
     if (sessionStorage.getItem('jn_open_admin') === '1') {
@@ -521,16 +751,21 @@
       if (session) openAdminDashboard();
     }
 
-    brand.addEventListener('dblclick', async () => {
+    brand.addEventListener('dblclick', async (e) => {
+      e.preventDefault();
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) { openAdminDashboard(); return; }
-      const modal = buildLoginModal();
-      modal.classList.add('open');
-      setTimeout(() => document.getElementById('jn-admin-pass').focus(), 50);
+      scrollToTopThen(async () => {
+        if (session) { openAdminDashboard(); return; }
+        const modal = buildLoginModal();
+        modal.classList.add('open');
+        if (window.jcLockPageScroll) window.jcLockPageScroll();
+        setTimeout(() => document.getElementById('jn-admin-pass').focus(), 50);
+      });
     });
   }
 
   function initAll() {
+    initScrollProgress();
     initPremiumScrollFx();
     initFallingDaisies();
     initAdminAccess();

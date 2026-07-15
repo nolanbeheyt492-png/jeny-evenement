@@ -35,6 +35,7 @@
 </head>
 
 <body>
+<div id="jn-scroll-progress"></div>
 <div id="page-loader">
   <div class="loader-mark">JN <span>ÉVÉNEMENT</span> <span class="loader-dot"></span></div>
 </div>
@@ -124,7 +125,6 @@
     const menus = window.JN.getMenus();
     grid.innerHTML = menus.map(m => `
       <div class="menu-card" id="${m.id}">
-        ${m.imageUrl ? `<img src="${m.imageUrl}" alt="${m.title}" style="width:calc(100% + 64px); margin:-32px -32px 20px; height:180px; object-fit:cover; border-radius:var(--radius-lg) var(--radius-lg) 0 0;">` : ''}
         <h3>${m.title}</h3>
         <div class="menu-tagline">${m.tagline || ''}</div>
         <p class="menu-desc">${m.description || ''}</p>

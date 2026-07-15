@@ -41,6 +41,7 @@
 </head>
 
 <body>
+<div id="jn-scroll-progress"></div>
 <div id="page-loader">
   <div class="loader-mark">JN <span>ÉVÉNEMENT</span> <span class="loader-dot"></span></div>
 </div>
@@ -95,7 +96,7 @@
 
         <div class="booking-summary" id="booking-summary"></div>
 
-        <form action="https://formsubmit.co/beheytnolan@gmail.com" method="POST" id="booking-form" data-jn-quote-form>
+        <form action="https://formsubmit.co/jenniferevenement@gmail.com" method="POST" id="booking-form" data-jn-quote-form>
           <input type="hidden" name="_next" value="https://jn-evenement.vercel.app/merci.html">
           <input type="hidden" name="_subject" value="Nouvelle demande de jour - JN Événement">
           <input type="hidden" name="_captcha" value="false">
@@ -134,15 +135,18 @@
           <p style="color:#E3C9C0;">Par téléphone :</p>
           <a href="tel:0600000000" class="info-link" data-jn-phone-link><span data-jn-phone-text>06 00 00 00 00</span></a>
           <hr style="border:none; border-top:1px solid rgba(255,255,255,0.14);">
+          <p style="color:#E3C9C0;">Par email :</p>
+          <a href="mailto:jenniferevenement@gmail.com" class="info-link"><span data-jn-email-text>jenniferevenement@gmail.com</span></a>
+          <hr style="border:none; border-top:1px solid rgba(255,255,255,0.14);">
           <p style="color:#E3C9C0;">Horaires :</p>
-          <p style="font-weight: 600; margin: 0;">Lundi au Vendredi : 8h00 — 18h30<br>Samedi : Sur rendez-vous (dégustations)</p>
+          <p style="font-weight: 600; margin: 0;">Lundi au Vendredi : 8h00 — 18h30<br>Samedi : Sur rendez-vous</p>
           <div class="map-wrap">
             <iframe src="https://www.google.com/maps?q=Pyr%C3%A9n%C3%A9es-Orientales&output=embed" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
           </div>
         </div>
 
         <div class="form-box" style="margin: 0;">
-          <form action="https://formsubmit.co/beheytnolan@gmail.com" method="POST" data-jn-quote-form>
+          <form action="https://formsubmit.co/jenniferevenement@gmail.com" method="POST" data-jn-quote-form>
             <input type="hidden" name="_next" value="https://jn-evenement.vercel.app/contact.html?status=success">
             <input type="hidden" name="_subject" value="Nouveau Devis Client - JN Événement">
             <input type="hidden" name="_captcha" value="false">
@@ -433,7 +437,7 @@
     },
     {
       keywords: ['horaire', 'ouvert', 'disponible', 'samedi', 'weekend'],
-      answer: "Nous sommes disponibles du lundi au vendredi de 8h00 à 18h30, et le samedi sur rendez-vous pour les dégustations ⏱️."
+      answer: "Nous sommes disponibles du lundi au vendredi de 8h00 à 18h30, et le samedi sur rendez-vous ⏱️."
     },
     {
       keywords: ['bonjour', 'salut', 'hello', 'bonsoir'],
@@ -455,7 +459,13 @@
       entry.keywords.forEach(kw => { if (q.includes(kw)) score++; });
       if (score > bestScore) { bestScore = score; bestMatch = entry; }
     });
-    return bestMatch ? bestMatch.answer : FALLBACK_ANSWER;
+    let answer = bestMatch ? bestMatch.answer : FALLBACK_ANSWER;
+    if (window.JN && window.JN.getSettings) {
+      const s = window.JN.getSettings();
+      const digits = (s.phone || '').replace(/[^0-9+]/g, '');
+      answer = answer.replace(/0600000000/g, digits).replace(/06 00 00 00 00/g, s.phone);
+    }
+    return answer;
   }
 
   const assistToggle = document.getElementById('assist-toggle');

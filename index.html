@@ -75,6 +75,7 @@
 </head>
 
 <body>
+<div id="jn-scroll-progress"></div>
 <div id="page-loader">
   <div class="loader-mark">JN <span>ÉVÉNEMENT</span> <span class="loader-dot"></span></div>
 </div>
@@ -116,6 +117,41 @@
     <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
       <a href="contact.html" class="btn btn-primary">Demander un devis gratuit</a>
       <a href="menus.html" class="btn btn-outline">Découvrir nos menus</a>
+    </div>
+  </div>
+</section>
+
+<!-- CHIFFRES CLÉS — bandeau défilant (gérables depuis Réglages admin) -->
+<section class="section jn-stats-section reveal">
+  <div class="jn-stats-marquee-wrap">
+    <div class="jn-stats-marquee" id="jn-stats-marquee">
+      <div class="jn-stats-track">
+        <div class="jn-stat" id="jn-stat-1"><div class="jn-stat-value" data-count="150">150+</div><div class="jn-stat-label">Événements réalisés</div></div>
+        <div class="jn-stat-sep">✦</div>
+        <div class="jn-stat" id="jn-stat-2"><div class="jn-stat-value" data-count="2500">2500+</div><div class="jn-stat-label">Convives servis</div></div>
+        <div class="jn-stat-sep">✦</div>
+        <div class="jn-stat" id="jn-stat-3"><div class="jn-stat-value">5.0★</div><div class="jn-stat-label">Note moyenne clients</div></div>
+        <div class="jn-stat-sep">✦</div>
+        <!-- Copies dupliquées pour une boucle visuelle continue et toujours bien remplie, synchronisées automatiquement -->
+        <div class="jn-stat"><div class="jn-stat-value" data-count="150">150+</div><div class="jn-stat-label">Événements réalisés</div></div>
+        <div class="jn-stat-sep">✦</div>
+        <div class="jn-stat"><div class="jn-stat-value" data-count="2500">2500+</div><div class="jn-stat-label">Convives servis</div></div>
+        <div class="jn-stat-sep">✦</div>
+        <div class="jn-stat"><div class="jn-stat-value">5.0★</div><div class="jn-stat-label">Note moyenne clients</div></div>
+        <div class="jn-stat-sep">✦</div>
+        <div class="jn-stat"><div class="jn-stat-value" data-count="150">150+</div><div class="jn-stat-label">Événements réalisés</div></div>
+        <div class="jn-stat-sep">✦</div>
+        <div class="jn-stat"><div class="jn-stat-value" data-count="2500">2500+</div><div class="jn-stat-label">Convives servis</div></div>
+        <div class="jn-stat-sep">✦</div>
+        <div class="jn-stat"><div class="jn-stat-value">5.0★</div><div class="jn-stat-label">Note moyenne clients</div></div>
+        <div class="jn-stat-sep">✦</div>
+        <div class="jn-stat"><div class="jn-stat-value" data-count="150">150+</div><div class="jn-stat-label">Événements réalisés</div></div>
+        <div class="jn-stat-sep">✦</div>
+        <div class="jn-stat"><div class="jn-stat-value" data-count="2500">2500+</div><div class="jn-stat-label">Convives servis</div></div>
+        <div class="jn-stat-sep">✦</div>
+        <div class="jn-stat"><div class="jn-stat-value">5.0★</div><div class="jn-stat-label">Note moyenne clients</div></div>
+        <div class="jn-stat-sep">✦</div>
+      </div>
     </div>
   </div>
 </section>
@@ -220,8 +256,8 @@
       </div>
       <div class="process-step">
         <div class="step-num">02</div>
-        <h4>Échange &amp; dégustation</h4>
-        <p>Nous affinons le menu selon vos goûts, votre budget et le nombre de convives. Dégustation possible sur demande.</p>
+        <h4>Échange &amp; personnalisation</h4>
+        <p>Nous affinons le menu selon vos goûts, votre budget et le nombre de convives.</p>
       </div>
       <div class="process-step">
         <div class="step-num">03</div>
@@ -284,25 +320,9 @@
         <strong id="reviews-avg">5.0</strong>/5 · <span id="reviews-count">avis Google vérifiés</span>
       </div>
     </div>
-    <div class="grid-testimonials reveal-stagger" id="reviews-grid">
-      <div class="testimonial-card">
-        <div class="stars">★★★★★</div>
-        <p>"Le menu mariage était sublime, tout le monde s'est régalé. Le dressage était magnifique et l'équipe très professionnelle."</p>
-        <div class="testimonial-author">Martine R.<span>Perpignan</span></div>
-      </div>
-      <div class="testimonial-card">
-        <div class="stars">★★★★★</div>
-        <p>"Devis clair et respecté au centime près. Le cocktail apéritif a fait l'unanimité pour notre pot de départ."</p>
-        <div class="testimonial-author">Thomas B.<span>Argelès-sur-Mer</span></div>
-      </div>
-      <div class="testimonial-card">
-        <div class="stars">★★★★★</div>
-        <p>"Buffet dînatoire copieux et savoureux pour l'anniversaire de ma fille : résultat impeccable et service à l'heure."</p>
-        <div class="testimonial-author">Isabelle F.<span>Céret</span></div>
-      </div>
-    </div>
+    <div class="grid-testimonials reveal-stagger" id="reviews-grid"></div>
     <div class="reviews-cta reveal">
-      <a href="#" id="reviews-cta-link" class="btn btn-outline" target="_blank" rel="noopener">Voir tous nos avis Google →</a>
+      <a href="javascript:void(0)" id="reviews-cta-link" class="btn btn-outline" target="_blank" rel="noopener">Voir tous nos avis Google →</a>
     </div>
   </div>
 </section>
@@ -510,13 +530,70 @@
       doc.text('Pour transformer cette estimation en devis ferme et gratuit :', 15, 150);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-      doc.text('Téléphone : 06 00 00 00 00', 15, 158);
+      doc.text('Téléphone : ' + ((window.JN && window.JN.getSettings) ? window.JN.getSettings().phone : '06 60 75 27 99'), 15, 158);
       doc.text('Zone d\'intervention : Perpignan et communes alentours (66)', 15, 165);
       doc.text('Devis gratuit et sans engagement sous 48h.', 15, 172);
 
       doc.save(`estimation-jn-evenement-${menu.id}-${guests}pers.pdf`);
     });
   }
+
+  // ==========================================================
+  // CHIFFRES CLÉS — animation de comptage au scroll
+  // ==========================================================
+  function animateStatValue(el) {
+    if (el.dataset.jnAnimated === '1') return;
+    const raw = el.textContent.trim();
+    const match = raw.match(/^([0-9]+(?:[.,][0-9]+)?)(.*)$/);
+    if (!match) return;
+    el.dataset.jnAnimated = '1';
+    const target = parseFloat(match[1].replace(',', '.'));
+    const suffix = match[2] || '';
+    const decimals = match[1].includes('.') || match[1].includes(',') ? 1 : 0;
+    const duration = 1200;
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const val = target * eased;
+      el.textContent = val.toFixed(decimals) + suffix;
+      if (t < 1) requestAnimationFrame(frame);
+      else el.textContent = match[1] + suffix;
+    }
+    requestAnimationFrame(frame);
+  }
+  function runStatsAnimation() {
+    document.querySelectorAll('.jn-stat-value').forEach(animateStatValue);
+  }
+  const statsSection = document.querySelector('.jn-stats-section');
+  let statsInView = false, statsReady = false;
+  function maybeAnimateStats() { if (statsInView && statsReady) runStatsAnimation(); }
+  document.addEventListener('jn:stats-ready', () => { statsReady = true; maybeAnimateStats(); });
+  if (statsSection && 'IntersectionObserver' in window) {
+    new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => { if (entry.isIntersecting) { statsInView = true; maybeAnimateStats(); obs.unobserve(entry.target); } });
+    }, { threshold: 0.4 }).observe(statsSection);
+  } else { statsInView = true; }
+
+  // ==========================================================
+  // AVIS CLIENTS (gérables depuis l'espace admin)
+  // ==========================================================
+  function renderTestimonials() {
+    const grid = document.getElementById('reviews-grid');
+    if (!grid || !window.JN || !window.JN.getTestimonials) return;
+    const items = window.JN.getTestimonials();
+    grid.innerHTML = items.map(t => `
+      <div class="testimonial-card">
+        <div class="stars">${'★'.repeat(Math.max(1, Math.min(5, t.rating || 5)))}</div>
+        <p>"${t.quote || ''}"</p>
+        <div class="testimonial-author">${t.author || ''}<span>${t.location || ''}</span></div>
+      </div>`).join('');
+  }
+  document.addEventListener('jn:testimonials-updated', renderTestimonials);
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.JN) window.JN.ready.then(renderTestimonials);
+  });
+  if (window.JN) window.JN.ready.then(renderTestimonials);
 
   // ==========================================================
   // AVIS GOOGLE EN DIRECT

@@ -37,6 +37,19 @@
 
   .menu-not-found { text-align:center; padding:60px 20px; color:var(--text-muted); }
   .menu-cta-box { text-align:center; margin-top:56px; }
+
+  @media (max-width:768px){
+    .items-table{ display:block; }
+    .items-table thead{ display:none; }
+    .items-table tbody{ display:block; }
+    .items-table tr{ display:block; margin-bottom:14px; border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+    .items-table tr:last-child{ margin-bottom:0; }
+    .items-table td{ display:flex; justify-content:space-between; gap:12px; align-items:flex-start; text-align:right; }
+    .items-table td::before{ content:attr(data-label); font-family:var(--font-mono); font-weight:700; color:var(--text); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.3px; text-align:left; flex:0 0 auto; }
+    .items-table td[colspan]{ display:block; text-align:center; }
+    .items-table td[colspan]::before{ display:none; }
+    .menu-summary-box{ padding:28px 22px; }
+  }
 </style>
 <link rel="icon" type="image/png" sizes="512x512" href="favicon-512.png">
 <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
@@ -45,6 +58,7 @@
 </head>
 
 <body>
+<div id="jn-scroll-progress"></div>
 <div id="page-loader">
   <div class="loader-mark">JN <span>ÉVÉNEMENT</span> <span class="loader-dot"></span></div>
 </div>
@@ -137,15 +151,14 @@
     const includesHtml = (menu.includes || []).map(i => `<li>${i}</li>`).join('');
     const itemsHtml = (menu.items || []).map(it => `
       <tr>
-        <td class="item-name">${it.name}</td>
-        <td>${it.desc || ''}</td>
-        <td class="item-unit">${it.unit}</td>
-        <td class="item-price">${window.JN.formatEuro(it.price)}</td>
+        <td class="item-name" data-label="Plat / Pièce">${it.name}</td>
+        <td data-label="Description">${it.desc || ''}</td>
+        <td class="item-unit" data-label="Unité">${it.unit}</td>
+        <td class="item-price" data-label="Prix">${window.JN.formatEuro(it.price)}</td>
       </tr>`).join('') || `<tr><td colspan="4" style="text-align:center; font-style:italic;">Aucune pièce à la carte pour ce menu pour le moment.</td></tr>`;
 
     wrap.innerHTML = `
       <div class="menu-detail-head reveal">
-        ${menu.imageUrl ? `<img src="${menu.imageUrl}" alt="${menu.title}" style="width:100%; max-width:700px; height:280px; object-fit:cover; border-radius:var(--radius-lg); margin-bottom:28px;">` : ''}
         <div class="menu-tagline">${menu.tagline || ''}</div>
         <h2>${menu.title}</h2>
         <p>${menu.description || ''}</p>
