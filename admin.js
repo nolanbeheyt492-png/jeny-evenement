@@ -742,10 +742,8 @@
   async function initAdminAccess() {
     const brand = document.getElementById('brand-logo');
     if (!brand) return;
-    brand.style.touchAction = 'manipulation';
 
-    brand.addEventListener('dblclick', async (e) => {
-      e.preventDefault();
+    const triggerAdminAccess = async () => {
       try {
         await window.JN.ready;
         if (!supabase) throw new Error('Connexion à la base indisponible');
@@ -760,6 +758,32 @@
       } catch (err) {
         console.error('Accès admin impossible :', err);
         alert('Impossible d\'ouvrir l\'espace admin pour le moment (connexion internet ou base de données indisponible). Réessayez dans un instant.');
+      }
+    };
+
+    // Détection unifiée du double-tap / double-clic via Pointer Events.
+    // Couvre souris, tactile ET stylet avec un seul code, sans dépendre de
+    // l'événement natif dblclick (peu fiable sur mobile) ni des touch events
+    // bruts (sujets à des soucis d'annulation par le navigateur).
+    let lastTapTime = 0;
+    let lastTapX = 0;
+    let lastTapY = 0;
+    const DOUBLE_TAP_DELAY = 400; // ms
+    const DOUBLE_TAP_DISTANCE = 50; // px
+
+    brand.addEventListener('pointerup', (e) => {
+      const now = Date.now();
+      const dx = Math.abs(e.clientX - lastTapX);
+      const dy = Math.abs(e.clientY - lastTapY);
+      const isDoubleTap = (now - lastTapTime) < DOUBLE_TAP_DELAY && dx < DOUBLE_TAP_DISTANCE && dy < DOUBLE_TAP_DISTANCE;
+
+      if (isDoubleTap) {
+        lastTapTime = 0;
+        triggerAdminAccess();
+      } else {
+        lastTapTime = now;
+        lastTapX = e.clientX;
+        lastTapY = e.clientY;
       }
     });
 
