@@ -320,7 +320,7 @@ footer{padding:56px 24px; border-top:1px solid var(--border); color:var(--text-m
 
   .gallery-info{padding:16px;}
   .contact-info-box{gap:18px;}
-  .info-link{font-size:1.1rem;}
+  .info-link{font-size:1.1rem; word-break:break-word; overflow-wrap:anywhere;}
 
   .checklist-box{padding:22px; margin-top:28px;}
   .checklist-item{gap:12px; margin-bottom:18px;}
