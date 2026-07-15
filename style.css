@@ -74,7 +74,8 @@
 .romantic-quote-deco{ color:var(--chalk); font-size:1.1rem; }
 
 *{box-sizing:border-box; margin:0; padding:0;}
-html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth; -webkit-text-size-adjust:100%; text-size-adjust:100%;}
+img,svg{max-width:100%; height:auto;}
 body{
   position:relative;
   background-color:var(--bg);

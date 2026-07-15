@@ -743,25 +743,34 @@
     const brand = document.getElementById('brand-logo');
     if (!brand) return;
     brand.style.touchAction = 'manipulation';
-    await window.JN.ready;
-
-    if (sessionStorage.getItem('jn_open_admin') === '1') {
-      sessionStorage.removeItem('jn_open_admin');
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) openAdminDashboard();
-    }
 
     brand.addEventListener('dblclick', async (e) => {
       e.preventDefault();
-      const { data: { session } } = await supabase.auth.getSession();
-      scrollToTopThen(async () => {
-        if (session) { openAdminDashboard(); return; }
-        const modal = buildLoginModal();
-        modal.classList.add('open');
-        if (window.jcLockPageScroll) window.jcLockPageScroll();
-        setTimeout(() => document.getElementById('jn-admin-pass').focus(), 50);
-      });
+      try {
+        await window.JN.ready;
+        if (!supabase) throw new Error('Connexion à la base indisponible');
+        const { data: { session } } = await supabase.auth.getSession();
+        scrollToTopThen(async () => {
+          if (session) { openAdminDashboard(); return; }
+          const modal = buildLoginModal();
+          modal.classList.add('open');
+          if (window.jcLockPageScroll) window.jcLockPageScroll();
+          setTimeout(() => document.getElementById('jn-admin-pass').focus(), 50);
+        });
+      } catch (err) {
+        console.error('Accès admin impossible :', err);
+        alert('Impossible d\'ouvrir l\'espace admin pour le moment (connexion internet ou base de données indisponible). Réessayez dans un instant.');
+      }
     });
+
+    await window.JN.ready;
+    if (sessionStorage.getItem('jn_open_admin') === '1') {
+      sessionStorage.removeItem('jn_open_admin');
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) openAdminDashboard();
+      } catch (err) { console.error('Reprise de session admin impossible :', err); }
+    }
   }
 
   function initAll() {
