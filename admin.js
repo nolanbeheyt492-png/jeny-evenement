@@ -1,121 +1,70 @@
 /* ==========================================================
-   JN ÉVÉNEMENT — Moteur de données (window.JN) connecté à Supabase
+   JN ÉVÉNEMENT — Moteur de données (window.JN) connecté à VOTRE VPS
    Alimente : menus.html, menu.html, realisations.html, l'estimateur
    de budget sur index.html, et le panneau admin (double-clic logo).
    ========================================================== */
 (function () {
 
-  // ---- Configuration Supabase ------------------------------------------
-  const SUPABASE_URL = 'https://rumlowblqgzxkhadymur.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_9zcs4Q-rciRAVmmuPL738A_6n353h3G';
-  const ADMIN_EMAIL = 'admin@jn-evenement.fr'; // compte créé dans Supabase Authentication
-  const PHOTOS_BUCKET = 'photos';
+  // ---- Configuration API VPS ---------------------------------------------
+  // ⚠️ Remplace par ton nom de domaine une fois que tu l'auras (ex: https://api.tondomaine.com)
+  const API_BASE = 'http://129.80.196.1';
 
-  let supabase = null;
   let menusCache = [];
   let photosCache = [];
   let testimonialsCache = [];
   let settingsCache = null;
-
-  // Charge la librairie supabase-js depuis un CDN, puis initialise le client
-  function loadSupabase() {
-    return new Promise((resolve, reject) => {
-      if (window.supabase) { resolve(window.supabase); return; }
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-      script.onload = () => resolve(window.supabase);
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-  }
+  let authToken = localStorage.getItem('jn_admin_token') || null;
 
   function fireUpdated(kind) {
     document.dispatchEvent(new CustomEvent('jn:' + kind + '-updated'));
   }
 
-  // Menus de démonstration — insérés automatiquement UNE SEULE FOIS si la base
-  // est vide, pour donner un aperçu visuel. Modifiables/supprimables depuis l'admin.
-  const DEMO_MENUS = [
-    { id: 'demo-cocktail', title: '[EXEMPLE] Cocktail Dînatoire', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 28, min_guests: 15, includes: ['Pièces salées & sucrées', 'Service inclus'], items: [], sort_order: 0 },
-    { id: 'demo-mariage', title: '[EXEMPLE] Mariage Prestige', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 65, min_guests: 40, includes: ['Entrée, plat, dessert', 'Pièce montée'], items: [], sort_order: 1 },
-    { id: 'demo-anniversaire', title: '[EXEMPLE] Anniversaire', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 22, min_guests: 10, includes: ['Buffet complet', 'Gâteau sur demande'], items: [], sort_order: 2 },
-    { id: 'demo-brunch', title: '[EXEMPLE] Brunch', tagline: 'À personnaliser depuis l\'admin', description: 'Ceci est un menu d\'exemple pour vous montrer le rendu du site. Modifiez ou supprimez-le depuis votre espace admin.', price_per_person: 18, min_guests: 8, includes: ['Sucré & salé', 'Boissons chaudes incluses'], items: [], sort_order: 3 }
-  ];
+  function authHeaders(extra) {
+    const h = Object.assign({}, extra || {});
+    if (authToken) h['Authorization'] = 'Bearer ' + authToken;
+    return h;
+  }
 
+  async function apiGet(path) {
+    const res = await fetch(API_BASE + path);
+    if (!res.ok) throw new Error('Erreur API ' + path);
+    return res.json();
+  }
+  async function apiPost(path, body) {
+    const res = await fetch(API_BASE + path, {
+      method: 'POST',
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { error: data };
+    return { data };
+  }
+  async function apiPut(path, body) {
+    const res = await fetch(API_BASE + path, {
+      method: 'PUT',
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { error: data };
+    return { data };
+  }
+  async function apiDelete(path) {
+    const res = await fetch(API_BASE + path, { method: 'DELETE', headers: authHeaders() });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { error: data };
+    return { data };
+  }
+
+  // ---- MENUS --------------------------------------------------------------
   async function fetchMenus() {
-    if (!supabase) return menusCache;
-    let { data, error } = await supabase.from('menus').select('*').order('sort_order', { ascending: true });
-    if (error) { console.error('Erreur chargement menus:', error); return menusCache; }
-    if ((!data || data.length === 0) && !sessionStorage.getItem('jn_demo_seeded')) {
-      sessionStorage.setItem('jn_demo_seeded', '1');
-      await supabase.from('menus').insert(DEMO_MENUS);
-      const retry = await supabase.from('menus').select('*').order('sort_order', { ascending: true });
-      data = retry.data;
-    }
-    menusCache = (data || []).map(rowToMenu);
-    fireUpdated('menus');
+    try {
+      const data = await apiGet('/api/menus');
+      menusCache = (data || []).map(rowToMenu);
+      fireUpdated('menus');
+    } catch (err) { console.error('Erreur chargement menus:', err); }
     return menusCache;
-  }
-
-  const DEMO_TESTIMONIALS = [
-    { id: 'demo-t1', author: 'Martine R.', location: 'Perpignan', rating: 5, quote: '[EXEMPLE] Le menu mariage était sublime, tout le monde s\'est régalé. Le dressage était magnifique et l\'équipe très professionnelle.', sort_order: 0 },
-    { id: 'demo-t2', author: 'Thomas B.', location: 'Argelès-sur-Mer', rating: 5, quote: '[EXEMPLE] Devis clair et respecté au centime près. Le cocktail apéritif a fait l\'unanimité pour notre pot de départ.', sort_order: 1 },
-    { id: 'demo-t3', author: 'Isabelle F.', location: 'Céret', rating: 5, quote: '[EXEMPLE] Buffet dînatoire copieux et savoureux pour l\'anniversaire de ma fille : résultat impeccable et service à l\'heure.', sort_order: 2 }
-  ];
-
-  const DEFAULT_SETTINGS = {
-    id: 'site',
-    phone: '06 60 75 27 99',
-    email: 'jenniferevenement@gmail.com',
-    stat1_value: '150+',
-    stat1_label: 'Événements réalisés',
-    stat2_value: '2500+',
-    stat2_label: 'Convives servis',
-    stat3_value: '5.0★',
-    stat3_label: 'Note moyenne clients'
-  };
-
-  async function fetchSettings() {
-    if (!supabase) { settingsCache = settingsCache || DEFAULT_SETTINGS; return settingsCache; }
-    let { data, error } = await supabase.from('settings').select('*').eq('id', 'site').maybeSingle();
-    if (error) { console.error('Erreur chargement réglages:', error); settingsCache = settingsCache || DEFAULT_SETTINGS; return settingsCache; }
-    if (!data) {
-      await supabase.from('settings').insert(DEFAULT_SETTINGS);
-      data = DEFAULT_SETTINGS;
-    }
-    settingsCache = data;
-    fireUpdated('settings');
-    return settingsCache;
-  }
-
-  async function saveSettings(newSettings) {
-    const row = Object.assign({ id: 'site' }, newSettings);
-    const { error } = await supabase.from('settings').update(row).eq('id', 'site');
-    if (!error) { settingsCache = row; fireUpdated('settings'); }
-    return error;
-  }
-
-  async function fetchTestimonials() {
-    if (!supabase) return testimonialsCache;
-    let { data, error } = await supabase.from('testimonials').select('*').order('sort_order', { ascending: true });
-    if (error) { console.error('Erreur chargement avis:', error); return testimonialsCache; }
-    if ((!data || data.length === 0) && !sessionStorage.getItem('jn_demo_testimonials_seeded')) {
-      sessionStorage.setItem('jn_demo_testimonials_seeded', '1');
-      await supabase.from('testimonials').insert(DEMO_TESTIMONIALS);
-      const retry = await supabase.from('testimonials').select('*').order('sort_order', { ascending: true });
-      data = retry.data;
-    }
-    testimonialsCache = data || [];
-    fireUpdated('testimonials');
-    return testimonialsCache;
-  }
-  async function fetchPhotos() {
-    if (!supabase) return photosCache;
-    const { data, error } = await supabase.from('photos').select('*').order('sort_order', { ascending: true });
-    if (error) { console.error('Erreur chargement photos:', error); return photosCache; }
-    photosCache = data || [];
-    fireUpdated('photos');
-    return photosCache;
   }
 
   function rowToMenu(row) {
@@ -145,6 +94,51 @@
     };
   }
 
+  // ---- SETTINGS -------------------------------------------------------------
+  const DEFAULT_SETTINGS = {
+    id: 'site',
+    phone: '06 60 75 27 99',
+    email: 'jenniferevenement@gmail.com',
+    stat1_value: '150+',
+    stat1_label: 'Événements réalisés',
+    stat2_value: '2500+',
+    stat2_label: 'Convives servis',
+    stat3_value: '5.0★',
+    stat3_label: 'Note moyenne clients'
+  };
+
+  async function fetchSettings() {
+    try {
+      settingsCache = await apiGet('/api/settings');
+      fireUpdated('settings');
+    } catch (err) { console.error('Erreur chargement réglages:', err); settingsCache = settingsCache || DEFAULT_SETTINGS; }
+    return settingsCache;
+  }
+
+  async function saveSettings(newSettings) {
+    const { error } = await apiPut('/api/settings', newSettings);
+    if (!error) { settingsCache = Object.assign({ id: 'site' }, newSettings); fireUpdated('settings'); }
+    return error;
+  }
+
+  // ---- TESTIMONIALS ---------------------------------------------------------
+  async function fetchTestimonials() {
+    try {
+      testimonialsCache = await apiGet('/api/testimonials');
+      fireUpdated('testimonials');
+    } catch (err) { console.error('Erreur chargement avis:', err); }
+    return testimonialsCache;
+  }
+
+  // ---- PHOTOS -----------------------------------------------------------
+  async function fetchPhotos() {
+    try {
+      photosCache = await apiGet('/api/photos');
+      fireUpdated('photos');
+    } catch (err) { console.error('Erreur chargement photos:', err); }
+    return photosCache;
+  }
+
   // ---- API publique (utilisée par menus.html, menu.html, index.html) ----
   window.JN = {
     getMenus: function () { return menusCache; },
@@ -157,15 +151,11 @@
     },
     refreshMenus: fetchMenus,
     refreshPhotos: fetchPhotos,
-    ready: null // remplacé plus bas par une vraie Promise
+    ready: null
   };
 
-  window.JN.ready = loadSupabase().then((sb) => {
-    supabase = sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    return Promise.all([fetchMenus(), fetchPhotos(), fetchTestimonials(), fetchSettings()]);
-  }).catch((err) => {
-    console.error('Supabase indisponible, le site fonctionne en mode dégradé.', err);
-  });
+  window.JN.ready = Promise.all([fetchMenus(), fetchPhotos(), fetchTestimonials(), fetchSettings()])
+    .catch((err) => { console.error('API VPS indisponible, le site fonctionne en mode dégradé.', err); });
 
   // ---- Barre de progression de lecture (haut de page) --------------------
   function initScrollProgress() {
@@ -188,13 +178,10 @@
     const s = window.JN.getSettings();
     const phoneDigits = (s.phone || '').replace(/[^0-9+]/g, '');
 
-    // Liens tel: (bouton "Appeler" mobile, boutons d'appel, etc.)
     document.querySelectorAll('a[href^="tel:"]').forEach((a) => { a.setAttribute('href', 'tel:' + phoneDigits); });
-    // Texte affiché du numéro (ex: page contact "Par téléphone : 06 ...")
     document.querySelectorAll('[data-jn-phone-text]').forEach((el) => { el.textContent = s.phone; });
     document.querySelectorAll('[data-jn-phone]').forEach((el) => { el.textContent = s.phone; });
 
-    // Liens mailto: et texte de l'email
     if (s.email) {
       document.querySelectorAll('a[href^="mailto:"]').forEach((a) => { a.setAttribute('href', 'mailto:' + s.email); });
       document.querySelectorAll('[data-jn-email-text]').forEach((el) => { el.textContent = s.email; });
@@ -207,7 +194,6 @@
     if (stat2) { stat2.querySelector('.jn-stat-value').textContent = s.stat2_value; stat2.querySelector('.jn-stat-label').textContent = s.stat2_label; }
     if (stat3) { stat3.querySelector('.jn-stat-value').textContent = s.stat3_value; stat3.querySelector('.jn-stat-label').textContent = s.stat3_label; }
 
-    // Duplique aussi les stats dans le bandeau défilant si présent
     document.querySelectorAll('.jn-stats-marquee .jn-stat-value').forEach((el, i) => {
       const vals = [s.stat1_value, s.stat2_value, s.stat3_value];
       const labs = [s.stat1_label, s.stat2_label, s.stat3_label];
@@ -301,18 +287,18 @@
       el.style.backgroundImage = daisyUrl;
       el.style.backgroundSize = 'contain';
       el.style.backgroundRepeat = 'no-repeat';
-      el.style.opacity = (0.5 + Math.random() * 0.4).toFixed(2);
+      el.style.opacity = (0.55 + Math.random() * 0.4).toFixed(2);
       layer.appendChild(el);
       return {
-        el: el,
+        el,
         x: Math.random() * 100,
-        y: Math.random() * pageHeight() * -1,
-        speed: 0.5 + Math.random() * 0.9,
-        swayAmp: 8 + Math.random() * 14,
-        swaySpeed: 0.0015 + Math.random() * 0.002,
-        swayOffset: Math.random() * Math.PI * 2,
+        y: Math.random() * -pageHeight(),
+        speed: 0.3 + Math.random() * 0.6,
         rot: Math.random() * 360,
-        rotSpeed: (Math.random() - 0.5) * 0.25
+        rotSpeed: (Math.random() - 0.5) * 0.6,
+        swayAmp: 15 + Math.random() * 25,
+        swaySpeed: 0.0006 + Math.random() * 0.0008,
+        swayOffset: Math.random() * 1000
       };
     }
     for (let i = 0; i < COUNT; i++) flowers.push(makeFlower());
@@ -339,8 +325,6 @@
   }
 
   // ---- Espace admin : double-clic sur le logo ----------------------------
-  // Le mot de passe est vérifié par Supabase Auth (serveur), plus par le
-  // navigateur — c'est une vraie authentification.
   function buildLoginModal() {
     if (document.getElementById('jn-admin-modal')) return document.getElementById('jn-admin-modal');
 
@@ -387,13 +371,26 @@
       const val = document.getElementById('jn-admin-pass').value;
       const btn = document.getElementById('jn-admin-submit');
       btn.disabled = true; btn.textContent = 'Connexion…';
-      const { error } = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password: val });
-      btn.disabled = false; btn.textContent = 'Se connecter';
-      if (error) {
+      try {
+        const res = await fetch(API_BASE + '/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: val })
+        });
+        const data = await res.json();
+        btn.disabled = false; btn.textContent = 'Se connecter';
+        if (!res.ok) {
+          document.getElementById('jn-admin-error').style.display = 'block';
+        } else {
+          authToken = data.token;
+          localStorage.setItem('jn_admin_token', authToken);
+          sessionStorage.setItem('jn_open_admin', '1');
+          location.reload();
+        }
+      } catch (err) {
+        btn.disabled = false; btn.textContent = 'Se connecter';
+        document.getElementById('jn-admin-error').textContent = 'Connexion au serveur impossible.';
         document.getElementById('jn-admin-error').style.display = 'block';
-      } else {
-        sessionStorage.setItem('jn_open_admin', '1');
-        location.reload();
       }
     }
     document.getElementById('jn-admin-submit').addEventListener('click', attemptLogin);
@@ -460,7 +457,7 @@
         <div class="jn-admin-topbar">
           <div>
             <h2>Espace administrateur</h2>
-            <p class="jn-admin-sub">Connecté à votre base en ligne — les changements sont visibles instantanément sur tous vos appareils.</p>
+            <p class="jn-admin-sub">Connecté à votre serveur — les changements sont visibles instantanément sur tous vos appareils.</p>
           </div>
           <div style="display:flex; gap:8px;">
             <button id="jn-admin-logout" type="button">Déconnexion</button>
@@ -518,7 +515,9 @@
     dash.addEventListener('click', (e) => { if (e.target === dash) closeDash(); });
     document.getElementById('jn-admin-close').addEventListener('click', closeDash);
     document.getElementById('jn-admin-logout').addEventListener('click', async () => {
-      await supabase.auth.signOut();
+      try { await fetch(API_BASE + '/api/logout', { method: 'POST', headers: authHeaders() }); } catch (e) {}
+      authToken = null;
+      localStorage.removeItem('jn_admin_token');
       closeDash();
     });
 
@@ -533,16 +532,16 @@
 
     document.getElementById('jn-admin-add-btn').addEventListener('click', async () => {
       const newMenu = { id: 'menu-' + Date.now(), title: 'Nouveau menu', tagline: '', description: '', pricePerPerson: 20, minGuests: 10, includes: [], items: [], sortOrder: menusCache.length };
-      const { error } = await supabase.from('menus').insert(menuToRow(newMenu));
-      if (error) { alert('Erreur lors de l\'ajout : ' + error.message); return; }
+      const { error } = await apiPost('/api/menus', menuToRow(newMenu));
+      if (error) { alert('Erreur lors de l\'ajout : ' + (error.error || '')); return; }
       await fetchMenus();
       renderAdminMenuList();
     });
 
     document.getElementById('jn-admin-add-avis-btn').addEventListener('click', async () => {
       const newAvis = { id: 'avis-' + Date.now(), author: 'Nouveau client', location: '', rating: 5, quote: 'Avis à modifier...', sort_order: testimonialsCache.length };
-      const { error } = await supabase.from('testimonials').insert(newAvis);
-      if (error) { alert('Erreur lors de l\'ajout : ' + error.message); return; }
+      const { error } = await apiPost('/api/testimonials', newAvis);
+      if (error) { alert('Erreur lors de l\'ajout : ' + (error.error || '')); return; }
       await fetchTestimonials();
       renderAdminAvisList();
     });
@@ -570,7 +569,7 @@
         stat3_value: document.getElementById('jn-set-s3v').value,
         stat3_label: document.getElementById('jn-set-s3l').value
       });
-      if (error) { alert('Erreur lors de l\'enregistrement : ' + error.message); return; }
+      if (error) { alert('Erreur lors de l\'enregistrement : ' + (error.error || '')); return; }
       applyGlobalSettings();
       const msg = document.getElementById('jn-admin-saved-msg');
       msg.style.display = 'block';
@@ -591,11 +590,17 @@
 
     async function handleFiles(files) {
       for (const file of files) {
-        const path = Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-        const { error: upErr } = await supabase.storage.from(PHOTOS_BUCKET).upload(path, file);
-        if (upErr) { alert('Erreur upload : ' + upErr.message); continue; }
-        const { data: pub } = supabase.storage.from(PHOTOS_BUCKET).getPublicUrl(path);
-        await supabase.from('photos').insert({ url: pub.publicUrl, sort_order: photosCache.length });
+        const formData = new FormData();
+        formData.append('photo', file);
+        try {
+          const res = await fetch(API_BASE + '/api/photos/upload', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: formData
+          });
+          const data = await res.json();
+          if (!res.ok) { alert('Erreur upload : ' + (data.error || '')); continue; }
+        } catch (err) { alert('Erreur upload : connexion au serveur impossible.'); continue; }
       }
       await fetchPhotos();
       renderAdminPhotoList();
@@ -642,8 +647,8 @@
           const field = f.dataset.field;
           m[field] = (field === 'pricePerPerson' || field === 'minGuests') ? parseFloat(f.value) || 0 : f.value;
         });
-        const { error } = await supabase.from('menus').update(menuToRow(m)).eq('id', m.id);
-        if (error) { alert('Erreur lors de l\'enregistrement : ' + error.message); return; }
+        const { error } = await apiPut('/api/menus/' + m.id, menuToRow(m));
+        if (error) { alert('Erreur lors de l\'enregistrement : ' + (error.error || '')); return; }
         await fetchMenus();
         const msg = document.getElementById('jn-admin-saved-msg');
         msg.style.display = 'block';
@@ -651,8 +656,8 @@
       });
       card.querySelector('.jn-admin-delete').addEventListener('click', async () => {
         if (!confirm('Supprimer ce menu ?')) return;
-        const { error } = await supabase.from('menus').delete().eq('id', menusCache[idx].id);
-        if (error) { alert('Erreur lors de la suppression : ' + error.message); return; }
+        const { error } = await apiDelete('/api/menus/' + menusCache[idx].id);
+        if (error) { alert('Erreur lors de la suppression : ' + (error.error || '')); return; }
         await fetchMenus();
         renderAdminMenuList();
       });
@@ -673,7 +678,7 @@
         const card = btn.closest('.jn-photo-card');
         const id = card.dataset.id;
         if (!confirm('Supprimer cette photo ?')) return;
-        await supabase.from('photos').delete().eq('id', id);
+        await apiDelete('/api/photos/' + id);
         await fetchPhotos();
         renderAdminPhotoList();
       });
@@ -707,8 +712,8 @@
           const field = f.dataset.field;
           t[field] = field === 'rating' ? (parseInt(f.value, 10) || 5) : f.value;
         });
-        const { error } = await supabase.from('testimonials').update(t).eq('id', t.id);
-        if (error) { alert('Erreur lors de l\'enregistrement : ' + error.message); return; }
+        const { error } = await apiPut('/api/testimonials/' + t.id, t);
+        if (error) { alert('Erreur lors de l\'enregistrement : ' + (error.error || '')); return; }
         await fetchTestimonials();
         const msg = document.getElementById('jn-admin-saved-msg');
         msg.style.display = 'block';
@@ -716,8 +721,8 @@
       });
       card.querySelector('.jn-admin-delete').addEventListener('click', async () => {
         if (!confirm('Supprimer cet avis ?')) return;
-        const { error } = await supabase.from('testimonials').delete().eq('id', testimonialsCache[idx].id);
-        if (error) { alert('Erreur lors de la suppression : ' + error.message); return; }
+        const { error } = await apiDelete('/api/testimonials/' + testimonialsCache[idx].id);
+        if (error) { alert('Erreur lors de la suppression : ' + (error.error || '')); return; }
         await fetchTestimonials();
         renderAdminAvisList();
       });
@@ -735,8 +740,17 @@
     }
     window.addEventListener('scroll', check, { passive: true });
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-    // Filet de sécurité si l'événement scroll ne se déclenche pas (déjà en haut, etc.)
     setTimeout(onScrollEnd, 500);
+  }
+
+  async function checkSession() {
+    if (!authToken) return false;
+    try {
+      const res = await fetch(API_BASE + '/api/session', { headers: authHeaders() });
+      const data = await res.json();
+      if (!data.valid) { authToken = null; localStorage.removeItem('jn_admin_token'); }
+      return !!data.valid;
+    } catch (err) { return false; }
   }
 
   async function initAdminAccess() {
@@ -746,10 +760,9 @@
     const triggerAdminAccess = async () => {
       try {
         await window.JN.ready;
-        if (!supabase) throw new Error('Connexion à la base indisponible');
-        const { data: { session } } = await supabase.auth.getSession();
+        const valid = await checkSession();
         scrollToTopThen(async () => {
-          if (session) { openAdminDashboard(); return; }
+          if (valid) { openAdminDashboard(); return; }
           const modal = buildLoginModal();
           modal.classList.add('open');
           if (window.jcLockPageScroll) window.jcLockPageScroll();
@@ -757,19 +770,15 @@
         });
       } catch (err) {
         console.error('Accès admin impossible :', err);
-        alert('Impossible d\'ouvrir l\'espace admin pour le moment (connexion internet ou base de données indisponible). Réessayez dans un instant.');
+        alert('Impossible d\'ouvrir l\'espace admin pour le moment (connexion internet ou serveur indisponible). Réessayez dans un instant.');
       }
     };
 
-    // Détection unifiée du double-tap / double-clic via Pointer Events.
-    // Couvre souris, tactile ET stylet avec un seul code, sans dépendre de
-    // l'événement natif dblclick (peu fiable sur mobile) ni des touch events
-    // bruts (sujets à des soucis d'annulation par le navigateur).
     let lastTapTime = 0;
     let lastTapX = 0;
     let lastTapY = 0;
-    const DOUBLE_TAP_DELAY = 400; // ms
-    const DOUBLE_TAP_DISTANCE = 50; // px
+    const DOUBLE_TAP_DELAY = 400;
+    const DOUBLE_TAP_DISTANCE = 50;
 
     brand.addEventListener('pointerup', (e) => {
       const now = Date.now();
@@ -791,8 +800,8 @@
     if (sessionStorage.getItem('jn_open_admin') === '1') {
       sessionStorage.removeItem('jn_open_admin');
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) openAdminDashboard();
+        const valid = await checkSession();
+        if (valid) openAdminDashboard();
       } catch (err) { console.error('Reprise de session admin impossible :', err); }
     }
   }
