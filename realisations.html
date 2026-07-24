@@ -89,6 +89,14 @@
   @media (prefers-reduced-motion: reduce){
     .gallery-item-frame img{ animation:none; }
   }
+  @media (hover:none){
+    /* Corrige le bug : trop de zooms Ken Burns infinis en même temps sur
+       un téléphone finissent par saturer l'appareil et les photos restent
+       bloquées agrandies pendant le défilement. On désactive l'effet sur
+       tout écran tactile (mobile ET tablette). */
+    .gallery-item-frame img{ animation:none !important; transform:none !important; }
+    .gallery-item-shine{ display:none; }
+  }
 </style>
 
 <link rel="icon" type="image/png" sizes="512x512" href="favicon-512.png">
