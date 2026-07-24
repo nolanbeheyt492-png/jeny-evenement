@@ -359,12 +359,21 @@
       </div>`;
     document.body.appendChild(modal);
 
+    let openedAt = 0;
     function close() {
       modal.classList.remove('open');
       document.getElementById('jn-admin-pass').value = '';
       document.getElementById('jn-admin-error').style.display = 'none';
+      if (window.jcUnlockPageScroll) window.jcUnlockPageScroll();
     }
-    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+    modal.addEventListener('click', (e) => {
+      // Ignore le clic "fantôme" que les navigateurs mobiles émettent juste
+      // après un tap tactile — sinon le 2e tap du double-tap qui ouvre ce
+      // panneau finit par le refermer instantanément (bug du flash).
+      if (Date.now() - openedAt < 500) return;
+      if (e.target === modal) close();
+    });
+    modal.__markOpened = function () { openedAt = Date.now(); };
     document.getElementById('jn-admin-cancel').addEventListener('click', () => { close(); if (window.jcUnlockPageScroll) window.jcUnlockPageScroll(); });
 
     async function attemptLogin() {
@@ -810,6 +819,7 @@
           if (valid) { openAdminDashboard(); return; }
           const modal = buildLoginModal();
           modal.classList.add('open');
+          if (modal.__markOpened) modal.__markOpened();
           if (window.jcLockPageScroll) window.jcLockPageScroll();
           setTimeout(() => document.getElementById('jn-admin-pass').focus(), 50);
         });
