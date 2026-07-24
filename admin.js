@@ -633,23 +633,68 @@
         <div class="jn-row">
           <div class="jn-admin-field" style="min-width:100%;"><label>Description</label><textarea rows="2" data-field="description">${m.description || ''}</textarea></div>
         </div>
+        <div class="jn-admin-items-wrap">
+          <label style="display:block; font-family:var(--font-mono); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.4px; margin:10px 0 6px;">Pièces à la carte</label>
+          <div class="jn-admin-items-list">
+            ${(m.items || []).map((it, ii) => `
+              <div class="jn-row jn-admin-item-row" data-item-idx="${ii}">
+                <div class="jn-admin-field"><label>Nom</label><input type="text" data-item-field="name" value="${(it.name || '').replace(/"/g, '&quot;')}"></div>
+                <div class="jn-admin-field" style="max-width:110px;"><label>Unité</label><input type="text" data-item-field="unit" value="${(it.unit || '').replace(/"/g, '&quot;')}"></div>
+                <div class="jn-admin-field" style="max-width:110px;"><label>Prix (€)</label><input type="number" step="0.5" data-item-field="price" value="${it.price != null ? it.price : ''}"></div>
+                <button class="jn-admin-item-delete" type="button" title="Supprimer cette pièce" style="align-self:flex-end; margin-bottom:2px;">✕</button>
+              </div>`).join('') || '<p style="color:var(--text-muted,#8C5D6B); font-size:0.85rem;">Aucune pièce pour ce menu.</p>'}
+          </div>
+          <button class="jn-admin-item-add" type="button" style="margin-top:8px;">+ Ajouter une pièce</button>
+        </div>
         <div class="jn-admin-menu-actions">
           <button class="jn-admin-save" type="button">Enregistrer</button>
           <button class="jn-admin-delete" type="button">Supprimer</button>
         </div>
       </div>`).join('');
 
+    function collectItemsFromCard(card) {
+      const items = [];
+      card.querySelectorAll('.jn-admin-item-row').forEach((row) => {
+        const item = {};
+        row.querySelectorAll('[data-item-field]').forEach((f) => {
+          const field = f.dataset.itemField;
+          item[field] = field === 'price' ? (parseFloat(f.value) || 0) : f.value;
+        });
+        items.push(item);
+      });
+      return items;
+    }
+
     list.querySelectorAll('.jn-admin-menu-card').forEach((card) => {
       const idx = parseInt(card.dataset.idx, 10);
+
+      card.querySelector('.jn-admin-item-add').addEventListener('click', () => {
+        const m = menusCache[idx];
+        m.items = m.items || [];
+        m.items.push({ name: 'Nouvelle pièce', unit: 'pièce', price: 0 });
+        renderAdminMenuList();
+      });
+
+      card.querySelectorAll('.jn-admin-item-delete').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const row = btn.closest('.jn-admin-item-row');
+          const ii = parseInt(row.dataset.itemIdx, 10);
+          menusCache[idx].items.splice(ii, 1);
+          renderAdminMenuList();
+        });
+      });
+
       card.querySelector('.jn-admin-save').addEventListener('click', async () => {
         const m = Object.assign({}, menusCache[idx]);
         card.querySelectorAll('[data-field]').forEach((f) => {
           const field = f.dataset.field;
           m[field] = (field === 'pricePerPerson' || field === 'minGuests') ? parseFloat(f.value) || 0 : f.value;
         });
+        m.items = collectItemsFromCard(card);
         const { error } = await apiPut('/api/menus/' + m.id, menuToRow(m));
         if (error) { alert('Erreur lors de l\'enregistrement : ' + (error.error || '')); return; }
         await fetchMenus();
+        renderAdminMenuList();
         const msg = document.getElementById('jn-admin-saved-msg');
         msg.style.display = 'block';
         setTimeout(() => { msg.style.display = 'none'; }, 2000);
