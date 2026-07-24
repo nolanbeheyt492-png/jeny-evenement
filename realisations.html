@@ -74,13 +74,25 @@
   .jn-lightbox img { max-width:90vw; max-height:80vh; border-radius:10px; box-shadow:0 30px 60px -20px rgba(0,0,0,0.6); transform: scale(0.94); transition: transform .35s cubic-bezier(0.16,1,0.3,1); }
   .jn-lightbox.open img { transform: scale(1); }
   .jn-lightbox-caption { position:absolute; bottom:28px; left:0; right:0; text-align:center; color:#F3DCD5; font-size:0.9rem; font-family:var(--font-mono); }
-  .jn-lightbox-close, .jn-lightbox-nav { position:absolute; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); color:#fff; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition: background .25s ease, transform .25s ease; }
-  .jn-lightbox-close:hover, .jn-lightbox-nav:hover { background:rgba(255,255,255,0.22); transform:scale(1.08); }
+  .jn-lightbox-close { position:absolute; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); color:#fff; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition: background .25s ease, transform .25s ease; }
+  .jn-lightbox-close:hover { background:rgba(255,255,255,0.22); transform:scale(1.08); }
   .jn-lightbox-close { top:24px; right:24px; width:44px; height:44px; font-size:1.1rem; }
-  .jn-lightbox-nav { top:50%; transform:translateY(-50%); width:52px; height:52px; font-size:1.8rem; }
-  .jn-lightbox-nav:hover { transform:translateY(-50%) scale(1.08); }
-  .jn-lightbox-prev { left:16px; }
-  .jn-lightbox-next { right:16px; }
+
+  /* Défilement automatique des photos dans le visionneur : glissement gauche/droite, sans flèches */
+  .jn-lightbox-slide-wrap { max-width:90vw; max-height:80vh; overflow:hidden; position:relative; }
+  .jn-lightbox-slide-wrap img { max-width:90vw; max-height:80vh; border-radius:10px; box-shadow:0 30px 60px -20px rgba(0,0,0,0.6); display:block; }
+  .jn-lightbox-slide-wrap img.jn-slide-out-left { animation: jn-slide-out-left .45s ease forwards; }
+  .jn-lightbox-slide-wrap img.jn-slide-out-right { animation: jn-slide-out-right .45s ease forwards; }
+  .jn-lightbox-slide-wrap img.jn-slide-in-left { animation: jn-slide-in-left .45s ease forwards; }
+  .jn-lightbox-slide-wrap img.jn-slide-in-right { animation: jn-slide-in-right .45s ease forwards; }
+  @keyframes jn-slide-out-left { from{ transform:translateX(0); opacity:1; } to{ transform:translateX(-60px); opacity:0; } }
+  @keyframes jn-slide-out-right { from{ transform:translateX(0); opacity:1; } to{ transform:translateX(60px); opacity:0; } }
+  @keyframes jn-slide-in-left { from{ transform:translateX(-60px); opacity:0; } to{ transform:translateX(0); opacity:1; } }
+  @keyframes jn-slide-in-right { from{ transform:translateX(60px); opacity:0; } to{ transform:translateX(0); opacity:1; } }
+  @media (prefers-reduced-motion: reduce){
+    .jn-lightbox-slide-wrap img.jn-slide-out-left, .jn-lightbox-slide-wrap img.jn-slide-out-right,
+    .jn-lightbox-slide-wrap img.jn-slide-in-left, .jn-lightbox-slide-wrap img.jn-slide-in-right { animation:none; }
+  }
   @media (max-width:700px){
     .jn-lightbox { padding:16px; }
     .jn-lightbox-nav { width:42px; height:42px; font-size:1.4rem; }
@@ -158,9 +170,9 @@
 
 <div id="jn-lightbox" class="jn-lightbox">
   <button type="button" class="jn-lightbox-close" id="jn-lightbox-close" aria-label="Fermer">✕</button>
-  <button type="button" class="jn-lightbox-nav jn-lightbox-prev" id="jn-lightbox-prev" aria-label="Précédent">‹</button>
-  <img id="jn-lightbox-img" src="" alt="">
-  <button type="button" class="jn-lightbox-nav jn-lightbox-next" id="jn-lightbox-next" aria-label="Suivant">›</button>
+  <div class="jn-lightbox-slide-wrap" id="jn-lightbox-slide-wrap">
+    <img id="jn-lightbox-img" src="" alt="">
+  </div>
   <div class="jn-lightbox-caption" id="jn-lightbox-caption"></div>
 </div>
 
@@ -278,26 +290,60 @@
   });
   if (window.JN) window.JN.ready.then(renderGallery);
 
-  // Lightbox plein écran avec navigation
+  // Lightbox plein écran avec défilement automatique des photos (glissement gauche/droite, sans flèches)
   function initLightbox(photos) {
     const box = document.getElementById('jn-lightbox');
     const imgEl = document.getElementById('jn-lightbox-img');
     const capEl = document.getElementById('jn-lightbox-caption');
     const btnClose = document.getElementById('jn-lightbox-close');
-    const btnPrev = document.getElementById('jn-lightbox-prev');
-    const btnNext = document.getElementById('jn-lightbox-next');
     let current = 0;
+    let autoTimer = null;
+    const AUTO_DELAY = 3500; // temps d'affichage avant de passer à la photo suivante
+
+    function renderSlide(idx, direction) {
+      // direction: 'right' = la nouvelle photo arrive depuis la droite (on avance)
+      //            'left'  = la nouvelle photo arrive depuis la gauche (on recule)
+      current = (idx + photos.length) % photos.length;
+      const p = photos[current];
+
+      const outClass = direction === 'right' ? 'jn-slide-out-left' : 'jn-slide-out-right';
+      const inClass = direction === 'right' ? 'jn-slide-in-right' : 'jn-slide-in-left';
+
+      imgEl.classList.remove('jn-slide-in-left', 'jn-slide-in-right', 'jn-slide-out-left', 'jn-slide-out-right');
+      imgEl.classList.add(outClass);
+
+      setTimeout(() => {
+        imgEl.src = p.url;
+        imgEl.alt = p.caption || 'Réalisation JN Événement';
+        capEl.textContent = [p.category, p.caption].filter(Boolean).join(' — ');
+        imgEl.classList.remove(outClass);
+        imgEl.classList.add(inClass);
+      }, 220);
+    }
 
     function show(idx) {
       current = (idx + photos.length) % photos.length;
       const p = photos[current];
+      imgEl.className = '';
       imgEl.src = p.url;
       imgEl.alt = p.caption || 'Réalisation JN Événement';
       capEl.textContent = [p.category, p.caption].filter(Boolean).join(' — ');
       box.classList.add('open');
       jcLockPageScroll();
+      startAuto();
     }
-    function close() { box.classList.remove('open'); jcUnlockPageScroll(); }
+    function close() {
+      box.classList.remove('open');
+      jcUnlockPageScroll();
+      stopAuto();
+    }
+
+    function startAuto() {
+      stopAuto();
+      if (photos.length < 2) return;
+      autoTimer = setInterval(() => { renderSlide(current + 1, 'right'); }, AUTO_DELAY);
+    }
+    function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
 
     document.getElementById('gallery-grid').addEventListener('click', (e) => {
       const item = e.target.closest('.gallery-item');
@@ -305,14 +351,10 @@
       show(parseInt(item.dataset.idx, 10));
     });
     btnClose.addEventListener('click', close);
-    btnPrev.addEventListener('click', () => show(current - 1));
-    btnNext.addEventListener('click', () => show(current + 1));
     box.addEventListener('click', (e) => { if (e.target === box) close(); });
     document.addEventListener('keydown', (e) => {
       if (!box.classList.contains('open')) return;
       if (e.key === 'Escape') close();
-      if (e.key === 'ArrowLeft') show(current - 1);
-      if (e.key === 'ArrowRight') show(current + 1);
     });
   }
 </script>

@@ -184,6 +184,9 @@ header.jn-scrolled .brand-logo-img{height:52px;}
 
 .header-btn{padding:9px 18px; font-size:0.85rem;}
 
+/* Icônes réseaux sociaux dans la barre du haut : réservées à la version mobile */
+.header-social{display:none !important;}
+
 /* Écrans PC un peu plus étroits : on resserre encore pour éviter tout débordement */
 @media (max-width:1150px) and (min-width:769px){
   .nav{gap:10px; padding:10px 18px;}
@@ -353,7 +356,16 @@ footer{padding:56px 24px; border-top:1px solid var(--border); color:var(--text-m
   .gallery-item img{height:200px;}
   .gallery-item-frame{ -webkit-overflow-scrolling:touch; }
   .btn{ padding:14px 22px; }
-  .header-social{ display:none !important; }
+
+  /* Icônes réseaux sociaux : visibles uniquement en version mobile, dans la barre du haut */
+  .header-social{
+    display:flex !important; align-items:center; gap:6px !important; margin-right:6px !important;
+    order:2;
+  }
+  .header-social a{width:26px !important; height:26px !important;}
+  .header-social a svg{width:13px !important; height:13px !important;}
+  .menu-toggle{order:3;}
+  .nav ul{order:4;}
 
   .thankyou-section{padding:40px 24px; margin:24px auto;}
   .thankyou-icon{font-size:3rem;}
