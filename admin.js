@@ -7,7 +7,7 @@
 
   // ---- Configuration API VPS ---------------------------------------------
   // ⚠️ Remplace par ton nom de domaine une fois que tu l'auras (ex: https://api.tondomaine.com)
-  const API_BASE = 'http://129.80.196.1';
+  const API_BASE = 'https://api.jennifer-evenement.com';
 
   let menusCache = [];
   let photosCache = [];
