@@ -449,6 +449,9 @@
       .jn-menu-move-up{ background:var(--bg,#FBF3F1); border:1px solid var(--border,#eee); border-radius:8px; width:32px; height:32px; font-size:0.9rem; cursor:pointer; color:var(--text,#4A2032); transition:background .15s; }
       .jn-menu-move-up:hover:not(:disabled){ background:var(--accent,#D67A93); color:#fff; }
       .jn-menu-move-up:disabled{ opacity:0.35; cursor:default; }
+      .jn-menu-move-down{ background:var(--bg,#FBF3F1); border:1px solid var(--border,#eee); border-radius:8px; width:32px; height:32px; font-size:0.9rem; cursor:pointer; color:var(--text,#4A2032); transition:background .15s; }
+      .jn-menu-move-down:hover:not(:disabled){ background:var(--accent,#D67A93); color:#fff; }
+      .jn-menu-move-down:disabled{ opacity:0.35; cursor:default; }
       .jn-menu-position{ font-size:0.76rem; font-weight:600; color:var(--text-muted,#8C5D6B); text-transform:uppercase; letter-spacing:0.4px; }
       .jn-admin-items-toggle{ display:block; width:100%; text-align:left; background:var(--bg,#FBF3F1); border:1px solid var(--border,#eee); border-radius:10px; padding:10px 12px; font-family:var(--font-mono); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.4px; margin:10px 0 0; cursor:pointer; color:var(--text,#4A2032); }
       .jn-admin-items-body{ margin-top:8px; }
@@ -912,6 +915,7 @@
       <div class="jn-admin-menu-card" data-idx="${i}">
         <div class="jn-admin-menu-order-bar">
           <button type="button" class="jn-menu-move-up" title="Monter ce menu" ${i === 0 ? 'disabled' : ''}>▲</button>
+          <button type="button" class="jn-menu-move-down" title="Descendre ce menu" ${i === menusCache.length - 1 ? 'disabled' : ''}>▼</button>
           <span class="jn-menu-position">Position ${i + 1}</span>
         </div>
         <div class="jn-row">
@@ -1018,24 +1022,33 @@
         renderAdminMenuList();
       });
 
-      const moveUpBtn = card.querySelector('.jn-menu-move-up');
-      if (moveUpBtn) {
-        moveUpBtn.addEventListener('click', async () => {
-          if (idx === 0) return;
-          moveUpBtn.disabled = true;
-          const current = menusCache[idx];
-          const prev = menusCache[idx - 1];
-          const currentOrder = current.sortOrder;
-          const prevOrder = prev.sortOrder;
-          current.sortOrder = prevOrder;
-          prev.sortOrder = currentOrder;
-          const { error } = await apiPut('/api/menus/' + current.id, menuToRow(current));
-          if (error) { alert('Erreur lors du déplacement : ' + (error.error || '')); return; }
-          const { error: error2 } = await apiPut('/api/menus/' + prev.id, menuToRow(prev));
-          if (error2) { alert('Erreur lors du déplacement : ' + (error2.error || '')); return; }
+      async function moveMenu(fromIdx, toIdx) {
+        if (toIdx < 0 || toIdx >= menusCache.length) return;
+        const arr = menusCache.slice();
+        const [moved] = arr.splice(fromIdx, 1);
+        arr.splice(toIdx, 0, moved);
+        // Réattribue un ordre propre et unique à tous les menus, dans leur nouvel ordre
+        arr.forEach((m, i) => { m.sortOrder = i; });
+        menusCache = arr;
+        renderAdminMenuList();
+        try {
+          for (const m of arr) {
+            const { error } = await apiPut('/api/menus/' + m.id, menuToRow(m));
+            if (error) { alert('Erreur lors du déplacement : ' + (error.error || '')); break; }
+          }
+        } finally {
           await fetchMenus();
           renderAdminMenuList();
-        });
+        }
+      }
+
+      const moveUpBtn = card.querySelector('.jn-menu-move-up');
+      if (moveUpBtn) {
+        moveUpBtn.addEventListener('click', () => moveMenu(idx, idx - 1));
+      }
+      const moveDownBtn = card.querySelector('.jn-menu-move-down');
+      if (moveDownBtn) {
+        moveDownBtn.addEventListener('click', () => moveMenu(idx, idx + 1));
       }
 
       card.querySelector('.jn-admin-item-add').addEventListener('click', () => {
