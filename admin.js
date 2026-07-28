@@ -10,6 +10,7 @@
   const API_BASE = 'https://api.jennifer-evenement.com';
 
   let menusCache = [];
+  const expandedMenuItems = new Set();
   let photosCache = [];
   let testimonialsCache = [];
   let settingsCache = null;
@@ -61,7 +62,7 @@
   async function fetchMenus() {
     try {
       const data = await apiGet('/api/menus');
-      menusCache = (data || []).map(rowToMenu);
+      menusCache = (data || []).map(rowToMenu).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
       fireUpdated('menus');
     } catch (err) { console.error('Erreur chargement menus:', err); }
     return menusCache;
@@ -444,6 +445,13 @@
       @keyframes jnFadeIn{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:none; } }
 
       .jn-admin-menu-card{ background:#fff; border:1px solid var(--border,#eee); border-radius:var(--radius-md,16px); padding:16px; margin-bottom:14px; box-shadow:0 2px 10px -6px rgba(74,32,50,0.12); }
+      .jn-admin-menu-order-bar{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+      .jn-menu-move-up{ background:var(--bg,#FBF3F1); border:1px solid var(--border,#eee); border-radius:8px; width:32px; height:32px; font-size:0.9rem; cursor:pointer; color:var(--text,#4A2032); transition:background .15s; }
+      .jn-menu-move-up:hover:not(:disabled){ background:var(--accent,#D67A93); color:#fff; }
+      .jn-menu-move-up:disabled{ opacity:0.35; cursor:default; }
+      .jn-menu-position{ font-size:0.76rem; font-weight:600; color:var(--text-muted,#8C5D6B); text-transform:uppercase; letter-spacing:0.4px; }
+      .jn-admin-items-toggle{ display:block; width:100%; text-align:left; background:var(--bg,#FBF3F1); border:1px solid var(--border,#eee); border-radius:10px; padding:10px 12px; font-family:var(--font-mono); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.4px; margin:10px 0 0; cursor:pointer; color:var(--text,#4A2032); }
+      .jn-admin-items-body{ margin-top:8px; }
       @media (min-width:700px){ .jn-admin-menu-card{ padding:20px 22px; } }
       .jn-admin-menu-card .jn-row{ display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
       .jn-admin-menu-card .jn-row:last-child{ margin-bottom:0; }
@@ -902,6 +910,10 @@
     if (!list) return;
     list.innerHTML = menusCache.map((m, i) => `
       <div class="jn-admin-menu-card" data-idx="${i}">
+        <div class="jn-admin-menu-order-bar">
+          <button type="button" class="jn-menu-move-up" title="Monter ce menu" ${i === 0 ? 'disabled' : ''}>▲</button>
+          <span class="jn-menu-position">Position ${i + 1}</span>
+        </div>
         <div class="jn-row">
           <div class="jn-menu-photo" data-idx="${i}" title="Cliquez pour changer la photo">
             ${m.imageUrl ? `<img src="${m.imageUrl}" alt="">` : `<span class="jn-menu-photo-placeholder">📷<br>Ajouter<br>une photo</span>`}
@@ -924,17 +936,19 @@
           <div class="jn-admin-field" style="min-width:100%;"><label>Description</label><textarea rows="2" data-field="description">${m.description || ''}</textarea></div>
         </div>
         <div class="jn-admin-items-wrap">
-          <label style="display:block; font-family:var(--font-mono); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.4px; margin:10px 0 6px;">Pièces à la carte</label>
-          <div class="jn-admin-items-list">
-            ${(m.items || []).map((it, ii) => `
-              <div class="jn-row jn-admin-item-row" data-item-idx="${ii}">
-                <div class="jn-admin-field"><label>Nom</label><input type="text" data-item-field="name" value="${(it.name || '').replace(/"/g, '&quot;')}"></div>
-                <div class="jn-admin-field" style="max-width:110px;"><label>Unité</label><input type="text" data-item-field="unit" value="${(it.unit || '').replace(/"/g, '&quot;')}"></div>
-                <div class="jn-admin-field" style="max-width:110px;"><label>Prix (€)</label><input type="number" step="0.01" data-item-field="price" value="${it.price != null ? it.price : ''}"></div>
-                <button class="jn-admin-item-delete" type="button" title="Supprimer cette pièce" style="align-self:flex-end; margin-bottom:2px;">✕</button>
-              </div>`).join('') || '<p style="color:var(--text-muted,#8C5D6B); font-size:0.85rem;">Aucune pièce pour ce menu.</p>'}
+          <button type="button" class="jn-admin-items-toggle">${expandedMenuItems.has(m.id) ? '▾' : '▸'} Pièces à la carte (${(m.items || []).length})</button>
+          <div class="jn-admin-items-body" style="${expandedMenuItems.has(m.id) ? '' : 'display:none;'}">
+            <div class="jn-admin-items-list">
+              ${(m.items || []).map((it, ii) => `
+                <div class="jn-row jn-admin-item-row" data-item-idx="${ii}">
+                  <div class="jn-admin-field"><label>Nom</label><input type="text" data-item-field="name" value="${(it.name || '').replace(/"/g, '&quot;')}"></div>
+                  <div class="jn-admin-field" style="max-width:110px;"><label>Unité</label><input type="text" data-item-field="unit" value="${(it.unit || '').replace(/"/g, '&quot;')}"></div>
+                  <div class="jn-admin-field" style="max-width:110px;"><label>Prix (€)</label><input type="number" step="0.01" data-item-field="price" value="${it.price != null ? it.price : ''}"></div>
+                  <button class="jn-admin-item-delete" type="button" title="Supprimer cette pièce" style="align-self:flex-end; margin-bottom:2px;">✕</button>
+                </div>`).join('') || '<p style="color:var(--text-muted,#8C5D6B); font-size:0.85rem;">Aucune pièce pour ce menu.</p>'}
+            </div>
+            <button class="jn-admin-item-add" type="button" style="margin-top:8px;">+ Ajouter une pièce</button>
           </div>
-          <button class="jn-admin-item-add" type="button" style="margin-top:8px;">+ Ajouter une pièce</button>
         </div>
         <div class="jn-admin-menu-actions">
           <button class="jn-admin-save" type="button">Enregistrer</button>
@@ -992,6 +1006,33 @@
           const m = Object.assign({}, menusCache[idx], { imageUrl: '' });
           const { error } = await apiPut('/api/menus/' + m.id, menuToRow(m));
           if (error) { alert('Erreur : ' + (error.error || '')); return; }
+          await fetchMenus();
+          renderAdminMenuList();
+        });
+      }
+
+      const itemsToggleBtn = card.querySelector('.jn-admin-items-toggle');
+      itemsToggleBtn.addEventListener('click', () => {
+        const m = menusCache[idx];
+        if (expandedMenuItems.has(m.id)) { expandedMenuItems.delete(m.id); } else { expandedMenuItems.add(m.id); }
+        renderAdminMenuList();
+      });
+
+      const moveUpBtn = card.querySelector('.jn-menu-move-up');
+      if (moveUpBtn) {
+        moveUpBtn.addEventListener('click', async () => {
+          if (idx === 0) return;
+          moveUpBtn.disabled = true;
+          const current = menusCache[idx];
+          const prev = menusCache[idx - 1];
+          const currentOrder = current.sortOrder;
+          const prevOrder = prev.sortOrder;
+          current.sortOrder = prevOrder;
+          prev.sortOrder = currentOrder;
+          const { error } = await apiPut('/api/menus/' + current.id, menuToRow(current));
+          if (error) { alert('Erreur lors du déplacement : ' + (error.error || '')); return; }
+          const { error: error2 } = await apiPut('/api/menus/' + prev.id, menuToRow(prev));
+          if (error2) { alert('Erreur lors du déplacement : ' + (error2.error || '')); return; }
           await fetchMenus();
           renderAdminMenuList();
         });
