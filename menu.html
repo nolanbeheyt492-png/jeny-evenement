@@ -163,10 +163,9 @@
     const itemsHtml = (menu.items || []).map(it => `
       <tr>
         <td class="item-name" data-label="Plat / Pièce">${it.name}</td>
-        <td data-label="Description">${it.desc || ''}</td>
         <td class="item-unit" data-label="Unité">${it.unit}</td>
         <td class="item-price" data-label="Prix">${window.JN.formatEuro(it.price)}</td>
-      </tr>`).join('') || `<tr><td colspan="4" style="text-align:center; font-style:italic;">Aucune pièce à la carte pour ce menu pour le moment.</td></tr>`;
+      </tr>`).join('') || `<tr><td colspan="3" style="text-align:center; font-style:italic;">Aucune pièce à la carte pour ce menu pour le moment.</td></tr>`;
 
     wrap.innerHTML = `
       <div class="menu-detail-head reveal">
@@ -190,7 +189,7 @@
 
       <div class="items-table-wrap reveal">
         <table class="items-table">
-          <thead><tr><th>Plat / Pièce</th><th>Description</th><th>Unité</th><th>Prix</th></tr></thead>
+          <thead><tr><th>Plat / Pièce</th><th>Unité</th><th>Prix</th></tr></thead>
           <tbody>${itemsHtml}</tbody>
         </table>
       </div>

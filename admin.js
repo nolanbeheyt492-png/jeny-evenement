@@ -147,7 +147,7 @@
     getTestimonials: function () { return testimonialsCache; },
     getSettings: function () { return settingsCache || DEFAULT_SETTINGS; },
     formatEuro: function (n) {
-      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n || 0);
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
     },
     refreshMenus: fetchMenus,
     refreshPhotos: fetchPhotos,
@@ -634,7 +634,7 @@
               <div class="jn-admin-field"><label>Accroche</label><input type="text" data-field="tagline" value="${(m.tagline || '').replace(/"/g, '&quot;')}"></div>
             </div>
             <div class="jn-row">
-              <div class="jn-admin-field"><label>Prix / personne (€)</label><input type="number" step="0.5" data-field="pricePerPerson" value="${m.pricePerPerson}"></div>
+              <div class="jn-admin-field"><label>Prix / personne (€)</label><input type="number" step="0.01" data-field="pricePerPerson" value="${m.pricePerPerson}"></div>
               <div class="jn-admin-field"><label>Minimum de convives</label><input type="number" data-field="minGuests" value="${m.minGuests}"></div>
             </div>
           </div>
@@ -649,7 +649,7 @@
               <div class="jn-row jn-admin-item-row" data-item-idx="${ii}">
                 <div class="jn-admin-field"><label>Nom</label><input type="text" data-item-field="name" value="${(it.name || '').replace(/"/g, '&quot;')}"></div>
                 <div class="jn-admin-field" style="max-width:110px;"><label>Unité</label><input type="text" data-item-field="unit" value="${(it.unit || '').replace(/"/g, '&quot;')}"></div>
-                <div class="jn-admin-field" style="max-width:110px;"><label>Prix (€)</label><input type="number" step="0.5" data-item-field="price" value="${it.price != null ? it.price : ''}"></div>
+                <div class="jn-admin-field" style="max-width:110px;"><label>Prix (€)</label><input type="number" step="0.01" data-item-field="price" value="${it.price != null ? it.price : ''}"></div>
                 <button class="jn-admin-item-delete" type="button" title="Supprimer cette pièce" style="align-self:flex-end; margin-bottom:2px;">✕</button>
               </div>`).join('') || '<p style="color:var(--text-muted,#8C5D6B); font-size:0.85rem;">Aucune pièce pour ce menu.</p>'}
           </div>

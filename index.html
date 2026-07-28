@@ -545,7 +545,20 @@
       doc.text('Zone d\'intervention : Perpignan et communes alentours (66)', 15, 165);
       doc.text('Devis gratuit et sans engagement sous 48h.', 15, 172);
 
-      doc.save(`estimation-jn-evenement-${menu.id}-${guests}pers.pdf`);
+      const pdfFileName = `estimation-jn-evenement-${menu.id}-${guests}pers.pdf`;
+      try {
+        const blob = doc.output('blob');
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = pdfFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      } catch (err) {
+        doc.save(pdfFileName);
+      }
     });
   }
 
