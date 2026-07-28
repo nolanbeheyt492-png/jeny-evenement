@@ -333,7 +333,7 @@
 
     const style = document.createElement('style');
     style.textContent = `
-      #jn-admin-modal{ position:fixed; inset:0; z-index:10000; background:rgba(33,20,26,0.55); display:none; align-items:center; justify-content:center; padding:20px; overflow-y:auto; overscroll-behavior:contain; }
+      #jn-admin-modal{ position:fixed; inset:0; height:100vh; height:100dvh; z-index:10000; background:rgba(33,20,26,0.55); display:none; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
       #jn-admin-modal.open{ display:flex; }
       #jn-admin-box{ background:#fff; border-radius:20px; padding:36px; max-width:360px; width:100%; max-height:90vh; max-height:90dvh; overflow-y:auto; box-shadow:0 30px 60px -20px rgba(74,32,50,0.4); font-family:var(--font-body, sans-serif); margin:auto; }
       #jn-admin-box h3{ font-family:var(--font-display, serif); color:var(--text, #4A2032); margin-bottom:6px; font-size:1.3rem; }
@@ -417,12 +417,12 @@
 
     const style = document.createElement('style');
     style.textContent = `
-      #jn-admin-dash{ position:fixed; inset:0; z-index:10001; background:var(--bg,#FDF4F3); display:none; align-items:flex-start; justify-content:center; padding:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+      #jn-admin-dash{ position:fixed; inset:0; height:100vh; height:100dvh; z-index:10001; background:var(--bg,#FDF4F3); display:none; align-items:flex-start; justify-content:center; padding:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
       #jn-admin-dash.open{ display:flex; }
-      #jn-admin-panel{ background:transparent; padding:0 0 calc(40px + env(safe-area-inset-bottom)); max-width:920px; width:100%; min-height:100%; box-sizing:border-box; font-family:var(--font-body, sans-serif); }
+      #jn-admin-panel{ background:transparent; padding:0 0 40px; max-width:920px; width:100%; min-height:100vh; box-sizing:border-box; font-family:var(--font-body, sans-serif); }
       @media (min-width:700px){ #jn-admin-panel{ padding:0 0 60px; } }
 
-      #jn-admin-panel .jn-admin-topbar{ display:flex; justify-content:space-between; align-items:center; gap:12px; position:sticky; top:0; background:rgba(253,244,243,0.92); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:calc(16px + env(safe-area-inset-top)) 18px 16px; z-index:5; border-bottom:1px solid var(--border,#eee); }
+      #jn-admin-panel .jn-admin-topbar{ display:flex; justify-content:space-between; align-items:center; gap:12px; position:sticky; top:0; background:rgba(253,244,243,0.92); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:16px 18px; z-index:5; border-bottom:1px solid var(--border,#eee); }
       @media (min-width:700px){ #jn-admin-panel .jn-admin-topbar{ padding:22px 32px; } }
       #jn-admin-panel .jn-admin-topbar h2{ font-family:var(--font-display, serif); color:var(--text, #4A2032); font-size:1.3rem; line-height:1.15; margin:0 0 2px; }
       @media (min-width:700px){ #jn-admin-panel .jn-admin-topbar h2{ font-size:1.6rem; } }
@@ -449,9 +449,6 @@
       .jn-menu-move-up{ background:var(--bg,#FBF3F1); border:1px solid var(--border,#eee); border-radius:8px; width:32px; height:32px; font-size:0.9rem; cursor:pointer; color:var(--text,#4A2032); transition:background .15s; }
       .jn-menu-move-up:hover:not(:disabled){ background:var(--accent,#D67A93); color:#fff; }
       .jn-menu-move-up:disabled{ opacity:0.35; cursor:default; }
-      .jn-menu-move-down{ background:var(--bg,#FBF3F1); border:1px solid var(--border,#eee); border-radius:8px; width:32px; height:32px; font-size:0.9rem; cursor:pointer; color:var(--text,#4A2032); transition:background .15s; }
-      .jn-menu-move-down:hover:not(:disabled){ background:var(--accent,#D67A93); color:#fff; }
-      .jn-menu-move-down:disabled{ opacity:0.35; cursor:default; }
       .jn-menu-position{ font-size:0.76rem; font-weight:600; color:var(--text-muted,#8C5D6B); text-transform:uppercase; letter-spacing:0.4px; }
       .jn-admin-items-toggle{ display:block; width:100%; text-align:left; background:var(--bg,#FBF3F1); border:1px solid var(--border,#eee); border-radius:10px; padding:10px 12px; font-family:var(--font-mono); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.4px; margin:10px 0 0; cursor:pointer; color:var(--text,#4A2032); }
       .jn-admin-items-body{ margin-top:8px; }
@@ -915,7 +912,6 @@
       <div class="jn-admin-menu-card" data-idx="${i}">
         <div class="jn-admin-menu-order-bar">
           <button type="button" class="jn-menu-move-up" title="Monter ce menu" ${i === 0 ? 'disabled' : ''}>▲</button>
-          <button type="button" class="jn-menu-move-down" title="Descendre ce menu" ${i === menusCache.length - 1 ? 'disabled' : ''}>▼</button>
           <span class="jn-menu-position">Position ${i + 1}</span>
         </div>
         <div class="jn-row">
@@ -1022,33 +1018,24 @@
         renderAdminMenuList();
       });
 
-      async function moveMenu(fromIdx, toIdx) {
-        if (toIdx < 0 || toIdx >= menusCache.length) return;
-        const arr = menusCache.slice();
-        const [moved] = arr.splice(fromIdx, 1);
-        arr.splice(toIdx, 0, moved);
-        // Réattribue un ordre propre et unique à tous les menus, dans leur nouvel ordre
-        arr.forEach((m, i) => { m.sortOrder = i; });
-        menusCache = arr;
-        renderAdminMenuList();
-        try {
-          for (const m of arr) {
-            const { error } = await apiPut('/api/menus/' + m.id, menuToRow(m));
-            if (error) { alert('Erreur lors du déplacement : ' + (error.error || '')); break; }
-          }
-        } finally {
-          await fetchMenus();
-          renderAdminMenuList();
-        }
-      }
-
       const moveUpBtn = card.querySelector('.jn-menu-move-up');
       if (moveUpBtn) {
-        moveUpBtn.addEventListener('click', () => moveMenu(idx, idx - 1));
-      }
-      const moveDownBtn = card.querySelector('.jn-menu-move-down');
-      if (moveDownBtn) {
-        moveDownBtn.addEventListener('click', () => moveMenu(idx, idx + 1));
+        moveUpBtn.addEventListener('click', async () => {
+          if (idx === 0) return;
+          moveUpBtn.disabled = true;
+          const current = menusCache[idx];
+          const prev = menusCache[idx - 1];
+          const currentOrder = current.sortOrder;
+          const prevOrder = prev.sortOrder;
+          current.sortOrder = prevOrder;
+          prev.sortOrder = currentOrder;
+          const { error } = await apiPut('/api/menus/' + current.id, menuToRow(current));
+          if (error) { alert('Erreur lors du déplacement : ' + (error.error || '')); return; }
+          const { error: error2 } = await apiPut('/api/menus/' + prev.id, menuToRow(prev));
+          if (error2) { alert('Erreur lors du déplacement : ' + (error2.error || '')); return; }
+          await fetchMenus();
+          renderAdminMenuList();
+        });
       }
 
       card.querySelector('.jn-admin-item-add').addEventListener('click', () => {
