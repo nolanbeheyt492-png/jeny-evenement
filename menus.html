@@ -18,8 +18,12 @@
 <link rel="stylesheet" href="style.css">
 <style>
   .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; margin-top: 40px; }
-  .menu-card { background: var(--panel); border: 1px solid var(--border); padding: 32px; border-radius: var(--radius-lg); box-shadow: 0 1px 2px rgba(33,27,18,0.03); transition:all .25s; display:flex; flex-direction:column; }
-  .menu-card:hover{ border-color: var(--accent); transform:translateY(-3px); box-shadow:0 14px 28px -14px rgba(33,27,18,0.18); }
+  .menu-card { background: var(--panel); border: 1px solid var(--border); padding: 0 0 32px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); transition:all .3s cubic-bezier(0.16,1,0.3,1); display:flex; flex-direction:column; overflow:hidden; }
+  .menu-card:hover{ border-color: var(--accent); transform:translateY(-4px); box-shadow: var(--shadow-md); }
+  .menu-card-photo{ width:100%; aspect-ratio:16/10; overflow:hidden; background:var(--bg-alt); }
+  .menu-card-photo img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease; }
+  .menu-card:hover .menu-card-photo img{ transform:scale(1.05); }
+  .menu-card-body{ padding:28px 32px 0; display:flex; flex-direction:column; flex:1; }
   .menu-card h3 { color: var(--text); margin-bottom: 6px; font-size: 1.25rem; font-weight:700; }
   .menu-card .menu-tagline { color: var(--accent); font-size:0.85rem; font-weight:600; margin-bottom:14px; }
   .menu-card p.menu-desc { color: var(--text-muted); font-size:0.94rem; margin-bottom:20px; flex:1; }
@@ -136,12 +140,15 @@
     const menus = window.JN.getMenus();
     grid.innerHTML = menus.map(m => `
       <div class="menu-card" id="${m.id}">
-        <h3>${m.title}</h3>
-        <div class="menu-tagline">${m.tagline || ''}</div>
-        <p class="menu-desc">${m.description || ''}</p>
-        <div class="menu-price">${window.JN.formatEuro(m.pricePerPerson)} <span>/ personne</span></div>
-        <div class="menu-min">Minimum ${m.minGuests} convives</div>
-        <a href="menu.html?id=${encodeURIComponent(m.id)}" class="btn btn-primary">Voir le détail &amp; les prix</a>
+        ${m.imageUrl ? `<div class="menu-card-photo"><img src="${m.imageUrl}" alt="${m.title}" loading="lazy"></div>` : ''}
+        <div class="menu-card-body">
+          <h3>${m.title}</h3>
+          <div class="menu-tagline">${m.tagline || ''}</div>
+          <p class="menu-desc">${m.description || ''}</p>
+          <div class="menu-price">${window.JN.formatEuro(m.pricePerPerson)} <span>/ personne</span></div>
+          <div class="menu-min">Minimum ${m.minGuests} convives</div>
+          <a href="menu.html?id=${encodeURIComponent(m.id)}" class="btn btn-primary">Voir le détail &amp; les prix</a>
+        </div>
       </div>`).join('');
 
     // Défilement vers l'ancre si présente dans l'URL (ex: menus.html#mariage-prestige)

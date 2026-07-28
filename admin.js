@@ -77,6 +77,7 @@
       minGuests: row.min_guests,
       includes: row.includes || [],
       items: row.items || [],
+      imageUrl: row.image_url || '',
       sortOrder: row.sort_order || 0
     };
   }
@@ -90,6 +91,7 @@
       min_guests: m.minGuests,
       includes: m.includes || [],
       items: m.items || [],
+      image_url: m.imageUrl || '',
       sort_order: m.sortOrder || 0
     };
   }
@@ -471,6 +473,16 @@
       #jn-upload-zone{ border:2px dashed var(--border,#ddd); border-radius:var(--radius-md,16px); padding:28px 16px; text-align:center; color:var(--text-muted,#8C5D6B); cursor:pointer; background:#fff; font-size:0.88rem; transition:border-color .15s, background .15s; }
       #jn-upload-zone.dragover{ border-color:var(--accent,#D67A93); background:#FBF3F1; }
 
+      /* Photo par menu */
+      .jn-menu-photo{ position:relative; flex-shrink:0; width:96px; height:96px; border-radius:var(--radius-sm,10px); overflow:hidden; border:1.5px dashed var(--border,#ddd); background:var(--bg,#FBF3F1); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color .15s; }
+      .jn-menu-photo:hover{ border-color:var(--accent,#D67A93); }
+      .jn-menu-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+      .jn-menu-photo-placeholder{ font-size:0.68rem; line-height:1.4; color:var(--text-muted,#8C5D6B); text-align:center; padding:4px; }
+      .jn-menu-photo-remove{ position:absolute; top:4px; right:4px; background:rgba(139,46,46,0.85); color:#fff; border:none; width:20px; height:20px; border-radius:50%; cursor:pointer; font-size:0.7rem; line-height:1; }
+      .jn-menu-photo-loading{ display:none; position:absolute; inset:0; background:rgba(255,255,255,0.75); align-items:center; justify-content:center; font-size:0.75rem; color:var(--text-muted,#8C5D6B); }
+      .jn-menu-photo.loading .jn-menu-photo-loading{ display:flex; }
+      @media (max-width:600px){ .jn-menu-photo{ width:100%; height:150px; } }
+
       @media (max-width:600px){
         #jn-admin-dash{ overflow-x:hidden; }
         #jn-admin-panel{ overflow-x:hidden; max-width:100vw; box-sizing:border-box; }
@@ -622,7 +634,7 @@
     });
 
     document.getElementById('jn-admin-add-btn').addEventListener('click', async () => {
-      const newMenu = { id: 'menu-' + Date.now(), title: 'Nouveau menu', tagline: '', description: '', pricePerPerson: 20, minGuests: 10, includes: [], items: [], sortOrder: menusCache.length };
+      const newMenu = { id: 'menu-' + Date.now(), title: 'Nouveau menu', tagline: '', description: '', pricePerPerson: 20, minGuests: 10, includes: [], items: [], imageUrl: '', sortOrder: menusCache.length };
       const { error } = await apiPost('/api/menus', menuToRow(newMenu));
       if (error) { alert('Erreur lors de l\'ajout : ' + (error.error || '')); return; }
       await fetchMenus();
@@ -891,7 +903,13 @@
     list.innerHTML = menusCache.map((m, i) => `
       <div class="jn-admin-menu-card" data-idx="${i}">
         <div class="jn-row">
-          <div style="flex:1;">
+          <div class="jn-menu-photo" data-idx="${i}" title="Cliquez pour changer la photo">
+            ${m.imageUrl ? `<img src="${m.imageUrl}" alt="">` : `<span class="jn-menu-photo-placeholder">📷<br>Ajouter<br>une photo</span>`}
+            ${m.imageUrl ? `<button type="button" class="jn-menu-photo-remove" title="Retirer la photo">✕</button>` : ''}
+            <div class="jn-menu-photo-loading">…</div>
+          </div>
+          <input type="file" accept="image/*" class="jn-menu-photo-input" data-idx="${i}" style="display:none;">
+          <div style="flex:1; min-width:200px;">
             <div class="jn-row">
               <div class="jn-admin-field"><label>Titre</label><input type="text" data-field="title" value="${(m.title || '').replace(/"/g, '&quot;')}"></div>
               <div class="jn-admin-field"><label>Accroche</label><input type="text" data-field="tagline" value="${(m.tagline || '').replace(/"/g, '&quot;')}"></div>
@@ -939,6 +957,45 @@
 
     list.querySelectorAll('.jn-admin-menu-card').forEach((card) => {
       const idx = parseInt(card.dataset.idx, 10);
+
+      const photoBox = card.querySelector('.jn-menu-photo');
+      const photoInput = card.querySelector('.jn-menu-photo-input');
+      photoBox.addEventListener('click', (e) => {
+        if (e.target.closest('.jn-menu-photo-remove')) return;
+        photoInput.click();
+      });
+      photoInput.addEventListener('change', async () => {
+        const file = photoInput.files[0];
+        if (!file) return;
+        photoBox.classList.add('loading');
+        try {
+          const formData = new FormData();
+          formData.append('photo', file);
+          const res = await fetch(API_BASE + '/api/photos/upload', { method: 'POST', headers: authHeaders(), body: formData });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.url) { alert('Erreur upload : ' + (data.error || 'réponse invalide du serveur.')); photoBox.classList.remove('loading'); return; }
+          const m = Object.assign({}, menusCache[idx], { imageUrl: data.url });
+          const { error } = await apiPut('/api/menus/' + m.id, menuToRow(m));
+          if (error) { alert('Erreur lors de l\'enregistrement : ' + (error.error || '')); photoBox.classList.remove('loading'); return; }
+          await fetchMenus();
+          renderAdminMenuList();
+        } catch (err) {
+          alert('Erreur upload : connexion au serveur impossible.');
+          photoBox.classList.remove('loading');
+        }
+      });
+      const removeBtn = card.querySelector('.jn-menu-photo-remove');
+      if (removeBtn) {
+        removeBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (!confirm('Retirer la photo de ce menu ?')) return;
+          const m = Object.assign({}, menusCache[idx], { imageUrl: '' });
+          const { error } = await apiPut('/api/menus/' + m.id, menuToRow(m));
+          if (error) { alert('Erreur : ' + (error.error || '')); return; }
+          await fetchMenus();
+          renderAdminMenuList();
+        });
+      }
 
       card.querySelector('.jn-admin-item-add').addEventListener('click', () => {
         const m = menusCache[idx];
