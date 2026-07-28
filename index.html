@@ -55,7 +55,7 @@
   }
 
   /* Modal de secours PDF */
-  .jn-pdf-modal-overlay{ position:fixed; inset:0; background:rgba(33,27,18,0.55); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .jn-pdf-modal-overlay{ position:fixed !important; inset:0; background:rgba(33,27,18,0.55); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px; }
   .jn-pdf-modal{ position:relative; background:var(--panel); border-radius:var(--radius-lg); padding:36px; max-width:440px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 30px 60px -20px rgba(33,27,18,0.35); }
   .jn-pdf-modal-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border:none; border-radius:50%; background:var(--bg-alt); cursor:pointer; font-size:1rem; color:var(--text-muted); }
   .jn-pdf-modal-icon{ font-size:2.4rem; margin-bottom:12px; }
@@ -67,8 +67,10 @@
   .jn-pdf-modal-divider{ text-align:center; color:var(--text-muted); font-size:0.8rem; margin:20px 0; position:relative; }
   .jn-pdf-modal-divider::before{ content:""; position:absolute; top:50%; left:0; right:0; height:1px; background:var(--border); z-index:0; }
   .jn-pdf-modal-divider span{ background:var(--panel); position:relative; z-index:1; padding:0 10px; }
-  .jn-pdf-email-form{ display:flex; gap:8px; }
-  .jn-pdf-email-form input{ flex:1; min-width:0; padding:12px; border:1px solid var(--border); border-radius:var(--radius-md); font-family:inherit; font-size:0.9rem; }
+  .jn-pdf-email-form{ display:flex; flex-direction:column; gap:10px; }
+  .jn-pdf-email-form input{ width:100%; padding:14px 16px; border:1.5px solid var(--border); border-radius:var(--radius-md); font-family:inherit; font-size:1rem; line-height:1.4; box-sizing:border-box; }
+  .jn-pdf-email-form input:focus{ outline:none; border-color:var(--accent); }
+  .jn-pdf-email-form button{ width:100%; }
   .jn-pdf-email-status{ margin-top:10px; font-size:0.85rem; color:var(--text-muted); }
   .jn-pdf-email-status.success{ color:var(--success, #4a8a5c); font-weight:600; }
   .jn-pdf-email-status.error{ color:#b0403a; font-weight:600; }
@@ -227,36 +229,6 @@
       </div>
 
       <p class="estimator-disclaimer">⚠️ Estimation indicative calculée à partir du prix de base par personne du menu choisi (2026), donnée à titre informatif. Elle ne constitue pas un devis. Seul un échange avec notre équipe permet d'établir un tarif garanti.</p>
-    </div>
-  </div>
-
-  <!-- MODAL : téléchargement PDF impossible (navigateur intégré Google/FB/Instagram) -->
-  <div id="jn-pdf-fallback-modal" class="jn-pdf-modal-overlay" style="display:none;">
-    <div class="jn-pdf-modal">
-      <button type="button" class="jn-pdf-modal-close" id="jn-pdf-modal-close" aria-label="Fermer">✕</button>
-      <div class="jn-pdf-modal-icon">📄</div>
-      <h3>Téléchargement impossible ici</h3>
-      <p id="jn-pdf-modal-text">Le téléchargement direct de PDF ne fonctionne pas dans l'application dans laquelle vous naviguez actuellement (Google, Facebook, Instagram...). C'est une limitation de sécurité propre à ces applications, pas un problème avec notre site.</p>
-
-      <div class="jn-pdf-modal-options">
-        <div class="jn-pdf-modal-option">
-          <strong>Option 1 — Ouvrir dans Chrome ou Safari</strong>
-          <p>Le téléchargement fonctionne normalement dans un vrai navigateur.</p>
-          <button type="button" class="btn btn-outline" id="jn-pdf-open-tab">Ouvrir le PDF dans un nouvel onglet</button>
-        </div>
-
-        <div class="jn-pdf-modal-divider"><span>ou</span></div>
-
-        <div class="jn-pdf-modal-option">
-          <strong>Option 2 — Recevoir le PDF par email</strong>
-          <p>Indiquez votre adresse email, nous vous l'envoyons.</p>
-          <form id="jn-pdf-email-form" class="jn-pdf-email-form">
-            <input type="email" id="jn-pdf-email-input" placeholder="votre@email.com" required>
-            <button type="submit" class="btn btn-primary" id="jn-pdf-email-submit">Envoyer</button>
-          </form>
-          <p id="jn-pdf-email-status" class="jn-pdf-email-status"></p>
-        </div>
-      </div>
     </div>
   </div>
 </section>
@@ -763,6 +735,36 @@
   })();
 </script>
 <script src="admin.js" defer></script>
+<!-- MODAL : téléchargement PDF impossible (navigateur intégré Google/FB/Instagram) -->
+<!-- Placé juste avant </body>, hors de toute section animée, pour rester bien fixé à l'écran -->
+<div id="jn-pdf-fallback-modal" class="jn-pdf-modal-overlay" style="display:none;">
+  <div class="jn-pdf-modal">
+    <button type="button" class="jn-pdf-modal-close" id="jn-pdf-modal-close" aria-label="Fermer">✕</button>
+    <div class="jn-pdf-modal-icon">📄</div>
+    <h3>Téléchargement impossible ici</h3>
+    <p id="jn-pdf-modal-text">Le téléchargement direct de PDF ne fonctionne pas dans l'application dans laquelle vous naviguez actuellement (Google, Facebook, Instagram...). C'est une limitation de sécurité propre à ces applications, pas un problème avec notre site.</p>
+
+    <div class="jn-pdf-modal-options">
+      <div class="jn-pdf-modal-option">
+        <strong>Option 1 — Ouvrir dans Chrome ou Safari</strong>
+        <p>Le téléchargement fonctionne normalement dans un vrai navigateur.</p>
+        <button type="button" class="btn btn-outline" id="jn-pdf-open-tab">Ouvrir le PDF dans un nouvel onglet</button>
+      </div>
+
+      <div class="jn-pdf-modal-divider"><span>ou</span></div>
+
+      <div class="jn-pdf-modal-option">
+        <strong>Option 2 — Recevoir le PDF par email</strong>
+        <p>Indiquez votre adresse email, nous vous l'envoyons.</p>
+        <form id="jn-pdf-email-form" class="jn-pdf-email-form">
+          <input type="email" id="jn-pdf-email-input" placeholder="votre@email.com" required>
+          <button type="submit" class="btn btn-primary" id="jn-pdf-email-submit">Envoyer</button>
+        </form>
+        <p id="jn-pdf-email-status" class="jn-pdf-email-status"></p>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 
 </html>
