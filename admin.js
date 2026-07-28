@@ -414,50 +414,76 @@
 
     const style = document.createElement('style');
     style.textContent = `
-      #jn-admin-dash{ position:fixed; inset:0; height:100vh; height:100dvh; z-index:10001; background:#fff; display:none; align-items:flex-start; justify-content:center; padding:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+      #jn-admin-dash{ position:fixed; inset:0; height:100vh; height:100dvh; z-index:10001; background:var(--bg,#FDF4F3); display:none; align-items:flex-start; justify-content:center; padding:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
       #jn-admin-dash.open{ display:flex; }
-      #jn-admin-panel{ background:#fff; padding:32px 32px 80px; max-width:1000px; width:100%; min-height:100vh; box-sizing:border-box; font-family:var(--font-body, sans-serif); }
-      @media (min-width:700px){ #jn-admin-panel{ padding:48px 56px 100px; } }
-      #jn-admin-panel h2{ font-family:var(--font-display, serif); color:var(--text, #4A2032); margin-bottom:4px; }
-      #jn-admin-panel .jn-admin-sub{ color:var(--text-muted,#8C5D6B); font-size:0.85rem; margin-bottom:18px; }
-      #jn-admin-panel .jn-admin-topbar{ display:flex; justify-content:space-between; align-items:flex-start; position:sticky; top:0; background:#fff; padding-top:8px; margin:-32px -32px 0; padding-left:32px; padding-right:32px; padding-bottom:16px; z-index:2; border-bottom:1px solid var(--border,#eee); }
-      @media (min-width:700px){ #jn-admin-panel .jn-admin-topbar{ margin:-48px -56px 0; padding-left:56px; padding-right:56px; } }
-      #jn-admin-close, #jn-admin-logout{ background:#F1E9E4; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text,#4A2032); }
-      .jn-admin-tabs{ display:flex; gap:8px; margin:18px 0 20px; border-bottom:1px solid var(--border,#eee); }
-      .jn-admin-tab{ padding:9px 16px; cursor:pointer; font-weight:600; font-size:0.88rem; color:var(--text-muted,#8C5D6B); border-bottom:2px solid transparent; }
-      .jn-admin-tab.active{ color:var(--accent,#D67A93); border-color:var(--accent,#D67A93); }
-      .jn-admin-tabpanel{ display:none; }
+      #jn-admin-panel{ background:transparent; padding:0 0 40px; max-width:920px; width:100%; min-height:100vh; box-sizing:border-box; font-family:var(--font-body, sans-serif); }
+      @media (min-width:700px){ #jn-admin-panel{ padding:0 0 60px; } }
+
+      #jn-admin-panel .jn-admin-topbar{ display:flex; justify-content:space-between; align-items:center; gap:12px; position:sticky; top:0; background:rgba(253,244,243,0.92); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:16px 18px; z-index:5; border-bottom:1px solid var(--border,#eee); }
+      @media (min-width:700px){ #jn-admin-panel .jn-admin-topbar{ padding:22px 32px; } }
+      #jn-admin-panel .jn-admin-topbar h2{ font-family:var(--font-display, serif); color:var(--text, #4A2032); font-size:1.3rem; line-height:1.15; margin:0 0 2px; }
+      @media (min-width:700px){ #jn-admin-panel .jn-admin-topbar h2{ font-size:1.6rem; } }
+      #jn-admin-panel .jn-admin-sub{ color:var(--text-muted,#8C5D6B); font-size:0.78rem; margin:0; }
+      #jn-admin-panel .jn-admin-topbar-actions{ display:flex; gap:8px; flex-shrink:0; }
+      #jn-admin-close, #jn-admin-logout{ background:#fff; border:1px solid var(--border,#eee); padding:9px 12px; border-radius:var(--radius-sm,10px); cursor:pointer; font-size:0.78rem; font-weight:600; color:var(--text,#4A2032); box-shadow:0 1px 2px rgba(74,32,50,0.06); transition:background .15s, transform .1s; white-space:nowrap; }
+      #jn-admin-close:active, #jn-admin-logout:active{ transform:scale(0.96); }
+      #jn-admin-logout:hover{ background:#F6DADA; color:#8B2E2E; }
+      #jn-admin-close:hover{ background:var(--bg-alt,#F9E1E4); }
+
+      #jn-admin-content{ padding:18px; }
+      @media (min-width:700px){ #jn-admin-content{ padding:28px 32px; } }
+
+      .jn-admin-tabs{ display:flex; gap:6px; margin:2px 0 18px; padding-bottom:2px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+      .jn-admin-tabs::-webkit-scrollbar{ display:none; }
+      .jn-admin-tab{ flex-shrink:0; white-space:nowrap; padding:9px 16px; cursor:pointer; font-weight:600; font-size:0.82rem; color:var(--text-muted,#8C5D6B); border-radius:999px; background:#fff; border:1px solid var(--border,#eee); transition:background .15s, color .15s, border-color .15s; }
+      .jn-admin-tab.active{ color:#fff; background:var(--accent,#D67A93); border-color:var(--accent,#D67A93); box-shadow:0 4px 10px -4px rgba(214,122,147,0.6); }
+      .jn-admin-tabpanel{ display:none; animation:jnFadeIn .2s ease; }
       .jn-admin-tabpanel.active{ display:block; }
-      .jn-admin-menu-card{ border:1px solid var(--border,#eee); border-radius:14px; padding:18px; margin-bottom:14px; }
-      .jn-admin-menu-card .jn-row{ display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
-      .jn-admin-menu-card label{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted,#8C5D6B); display:block; margin-bottom:4px; }
-      .jn-admin-menu-card input, .jn-admin-menu-card textarea{ width:100%; padding:9px 10px; border:1px solid var(--border,#ddd); border-radius:8px; font-size:0.88rem; font-family:inherit; }
-      .jn-admin-field{ flex:1; min-width:140px; }
-      .jn-admin-menu-actions{ display:flex; gap:8px; margin-top:10px; }
-      .jn-admin-menu-actions button{ border:none; padding:7px 12px; border-radius:8px; font-size:0.78rem; font-weight:600; cursor:pointer; }
+      @keyframes jnFadeIn{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:none; } }
+
+      .jn-admin-menu-card{ background:#fff; border:1px solid var(--border,#eee); border-radius:var(--radius-md,16px); padding:16px; margin-bottom:14px; box-shadow:0 2px 10px -6px rgba(74,32,50,0.12); }
+      @media (min-width:700px){ .jn-admin-menu-card{ padding:20px 22px; } }
+      .jn-admin-menu-card .jn-row{ display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+      .jn-admin-menu-card .jn-row:last-child{ margin-bottom:0; }
+      .jn-admin-menu-card label{ font-size:0.68rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted,#8C5D6B); display:block; margin-bottom:5px; font-weight:600; }
+      .jn-admin-menu-card input, .jn-admin-menu-card textarea, .jn-admin-menu-card select{ width:100%; max-width:100%; box-sizing:border-box; padding:11px 12px; border:1.5px solid var(--border,#ddd); border-radius:var(--radius-sm,10px); font-size:0.92rem; font-family:inherit; background:#fff; color:var(--text,#4A2032); transition:border-color .15s, box-shadow .15s; -webkit-appearance:none; appearance:none; }
+      .jn-admin-menu-card select{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%238C5D6B'/></svg>"); background-repeat:no-repeat; background-position:right 12px center; padding-right:30px; }
+      .jn-admin-menu-card input:focus, .jn-admin-menu-card textarea:focus, .jn-admin-menu-card select:focus{ outline:none; border-color:var(--accent,#D67A93); box-shadow:0 0 0 3px rgba(214,122,147,0.15); }
+      .jn-admin-field{ flex:1; min-width:140px; box-sizing:border-box; max-width:100%; }
+      .jn-admin-menu-actions{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+      .jn-admin-menu-actions button{ border:none; padding:10px 16px; border-radius:var(--radius-sm,10px); font-size:0.82rem; font-weight:600; cursor:pointer; transition:transform .1s, filter .15s; }
+      .jn-admin-menu-actions button:active{ transform:scale(0.97); }
       .jn-admin-save{ background:var(--accent,#D67A93); color:#fff; }
+      .jn-admin-save:hover{ filter:brightness(1.06); }
       .jn-admin-delete{ background:#F6DADA; color:#8B2E2E; }
-      #jn-admin-add-btn{ background:var(--text,#4A2032); color:#fff; border:none; padding:11px 18px; border-radius:10px; font-weight:600; cursor:pointer; margin-top:6px; }
-      #jn-admin-saved-msg{ display:none; background:#E4F3E7; color:#2B6B3F; padding:10px 14px; border-radius:10px; font-size:0.85rem; margin-bottom:14px; }
-      .jn-photo-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:14px; margin-bottom:18px; }
-      .jn-photo-card{ position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--border,#eee); aspect-ratio:1; }
+      .jn-admin-delete:hover{ background:#F2C6C6; }
+      #jn-admin-add-btn{ background:var(--text,#4A2032); color:#fff; border:none; padding:13px 20px; border-radius:var(--radius-sm,10px); font-weight:600; cursor:pointer; margin-top:6px; width:100%; font-size:0.9rem; transition:filter .15s, transform .1s; }
+      #jn-admin-add-btn:hover{ filter:brightness(1.15); }
+      #jn-admin-add-btn:active{ transform:scale(0.98); }
+      @media (min-width:700px){ #jn-admin-add-btn{ width:auto; } }
+      #jn-admin-saved-msg{ display:none; align-items:center; gap:8px; background:#E4F3E7; color:#2B6B3F; padding:11px 14px; border-radius:var(--radius-sm,10px); font-size:0.85rem; font-weight:600; margin-bottom:14px; }
+
+      .jn-photo-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(110px,1fr)); gap:10px; margin-bottom:18px; }
+      @media (min-width:700px){ .jn-photo-grid{ grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px; } }
+      .jn-photo-card{ position:relative; border-radius:var(--radius-sm,12px); overflow:hidden; border:1px solid var(--border,#eee); aspect-ratio:1; box-shadow:0 2px 8px -4px rgba(74,32,50,0.15); }
       .jn-photo-card img{ width:100%; height:100%; object-fit:cover; display:block; }
-      .jn-photo-card button{ position:absolute; top:6px; right:6px; background:rgba(139,46,46,0.9); color:#fff; border:none; width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:0.8rem; }
-      #jn-upload-zone{ border:2px dashed var(--border,#ddd); border-radius:14px; padding:28px; text-align:center; color:var(--text-muted,#8C5D6B); cursor:pointer; }
+      .jn-photo-card button{ position:absolute; top:6px; right:6px; background:rgba(139,46,46,0.85); color:#fff; border:none; width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:0.8rem; backdrop-filter:blur(2px); }
+      #jn-upload-zone{ border:2px dashed var(--border,#ddd); border-radius:var(--radius-md,16px); padding:28px 16px; text-align:center; color:var(--text-muted,#8C5D6B); cursor:pointer; background:#fff; font-size:0.88rem; transition:border-color .15s, background .15s; }
       #jn-upload-zone.dragover{ border-color:var(--accent,#D67A93); background:#FBF3F1; }
+
       @media (max-width:600px){
-        #jn-admin-panel{ padding:18px 14px 90px; }
-        #jn-admin-panel .jn-admin-topbar{ margin:-18px -14px 0; padding:10px 14px 14px; flex-direction:column; align-items:stretch; gap:10px; }
-        #jn-admin-panel .jn-admin-topbar > div[style]{ justify-content:flex-end; }
-        .jn-admin-tabs{ overflow-x:auto; -webkit-overflow-scrolling:touch; flex-wrap:nowrap; scrollbar-width:none; }
-        .jn-admin-tabs::-webkit-scrollbar{ display:none; }
-        .jn-admin-tab{ flex-shrink:0; white-space:nowrap; padding:9px 12px; }
-        .jn-admin-menu-card .jn-row{ flex-direction:column; }
+        #jn-admin-dash{ overflow-x:hidden; }
+        #jn-admin-panel{ overflow-x:hidden; max-width:100vw; box-sizing:border-box; }
+        #jn-admin-content{ padding:14px 12px 90px; }
+        .jn-admin-menu-card .jn-row{ flex-direction:column; gap:10px; }
         .jn-admin-field{ min-width:100%; }
-        .jn-admin-menu-actions button, #jn-admin-close, #jn-admin-logout{ min-height:40px; }
-        #jn-calc-add-menu, #jn-calc-add-item, #jn-calc-add-custom{ width:100%; min-height:42px; margin-top:4px; }
+        .jn-admin-menu-actions{ flex-direction:column; }
+        .jn-admin-menu-actions button{ width:100%; min-height:44px; }
+        #jn-admin-close, #jn-admin-logout{ min-height:38px; }
+        #jn-calc-add-menu, #jn-calc-add-item, #jn-calc-add-custom{ width:100%; min-height:44px; margin-top:2px; }
         #jn-tab-calc .jn-row{ align-items:stretch !important; }
         #jn-tab-calc select, #jn-tab-calc input{ font-size:0.95rem; }
+        .jn-admin-menu-card{ border-radius:14px; }
       }
     `;
     document.head.appendChild(style);
@@ -468,20 +494,21 @@
       <div id="jn-admin-panel">
         <div class="jn-admin-topbar">
           <div>
-            <h2>Espace administrateur</h2>
-            <p class="jn-admin-sub">Connecté à votre serveur — les changements sont visibles instantanément sur tous vos appareils.</p>
+            <h2>Espace admin</h2>
+            <p class="jn-admin-sub">Synchronisé en direct sur tous vos appareils</p>
           </div>
-          <div style="display:flex; gap:8px;">
+          <div class="jn-admin-topbar-actions">
             <button id="jn-admin-logout" type="button">Déconnexion</button>
             <button id="jn-admin-close" type="button">Fermer ✕</button>
           </div>
         </div>
+        <div id="jn-admin-content">
         <div id="jn-admin-saved-msg">✅ Modifications enregistrées.</div>
         <div class="jn-admin-tabs">
-          <div class="jn-admin-tab active" data-tab="menus">Menus</div>
-          <div class="jn-admin-tab" data-tab="photos">Photos</div>
-          <div class="jn-admin-tab" data-tab="avis">Avis clients</div>
-          <div class="jn-admin-tab" data-tab="reglages">Réglages</div>
+          <div class="jn-admin-tab active" data-tab="menus">🍽️ Menus</div>
+          <div class="jn-admin-tab" data-tab="photos">📷 Photos</div>
+          <div class="jn-admin-tab" data-tab="avis">💬 Avis</div>
+          <div class="jn-admin-tab" data-tab="reglages">⚙️ Réglages</div>
           <div class="jn-admin-tab" data-tab="calc">🧮 Calculatrice</div>
         </div>
         <div class="jn-admin-tabpanel active" id="jn-tab-menus">
@@ -570,6 +597,7 @@
             <button id="jn-calc-reset" type="button" class="jn-admin-delete">Tout effacer</button>
             <button id="jn-calc-download" type="button" class="jn-admin-save">⬇ Télécharger le récapitulatif</button>
           </div>
+        </div>
         </div>
       </div>`;
     document.body.appendChild(dash);
