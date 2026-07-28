@@ -546,16 +546,29 @@
       doc.text('Devis gratuit et sans engagement sous 48h.', 15, 172);
 
       const pdfFileName = `estimation-jn-evenement-${menu.id}-${guests}pers.pdf`;
+      const ua = navigator.userAgent || '';
+      // Navigateurs "in-app" (appli Google, Facebook, Instagram, Messenger...) qui bloquent
+      // souvent le téléchargement direct de fichiers, contrairement à Chrome/Safari classiques.
+      const isInAppBrowser = /GSA\/|FBAN|FBAV|Instagram|Line\/|MicroMessenger|wv\)/i.test(ua);
+
       try {
         const blob = doc.output('blob');
         const blobUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = pdfFileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+
+        if (isInAppBrowser) {
+          // Ces navigateurs bloquent souvent l'attribut download : on ouvre le PDF
+          // dans un nouvel onglet pour que l'utilisateur puisse l'enregistrer manuellement.
+          window.open(blobUrl, '_blank');
+          alert('Le PDF s\'ouvre dans un nouvel onglet. Utilisez le bouton de partage/enregistrement de votre navigateur pour le sauvegarder (le téléchargement direct n\'est pas toujours possible depuis l\'application Google, Facebook ou Instagram — ouvrez plutôt le site dans Chrome ou Safari pour un téléchargement direct).');
+        } else {
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = pdfFileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
       } catch (err) {
         doc.save(pdfFileName);
       }
