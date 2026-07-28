@@ -17,7 +17,11 @@
 <link rel="stylesheet" href="style.css">
 <style>
   .grid-commitments { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; margin-top: 40px; }
-  .commitment-card { background: var(--panel); border: 1px solid var(--border); padding: 32px; border-radius: var(--radius-lg); box-shadow: 0 1px 2px rgba(33,27,18,0.03); transition:all .25s; }
+  .commitment-card { background: var(--panel); border: 1px solid var(--border); padding: 32px; border-radius: var(--radius-lg); box-shadow: 0 1px 2px rgba(33,27,18,0.03); transition:all .25s; position:relative; overflow:hidden; }
+  .commitment-card::before{ content:""; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), var(--chalk)); transform:scaleX(0); transform-origin:left; transition:transform .35s ease; }
+  .commitment-card:hover::before{ transform:scaleX(1); }
+  .commitment-card:nth-child(even) .icon-badge{ background:var(--chalk-soft); }
+  .commitment-card:nth-child(even) .icon-badge svg{ stroke:var(--chalk); }
   .commitment-card:hover{ border-color: var(--accent); transform:translateY(-3px); box-shadow:0 14px 28px -14px rgba(33,27,18,0.18); }
   .commitment-card h3 { font-size: 1.2rem; color: var(--text); margin-bottom: 4px; font-weight:700; }
   .commitment-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
@@ -89,7 +93,7 @@
       <div class="commitment-card">
         <div class="icon-badge"><svg viewBox="0 0 24 24"><path d="M5 3v3M3.5 4.5h3M14 4l1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/><path d="M6 17l6-11 6 11z"/><line x1="9.5" y1="11.5" x2="14.5" y2="11.5"/></svg></div>
         <h3>Ponctualité &amp; Propreté</h3>
-        <p>Livraison à l'heure convenue, installation soignée et rangement complet en fin de prestation.</p>
+        <p>Livraison à l'heure convenue et présentation soignée des plats.</p>
       </div>
     </div>
 

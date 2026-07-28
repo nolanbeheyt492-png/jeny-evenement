@@ -410,7 +410,7 @@
   function openAdminDashboard() {
     let dash = document.getElementById('jn-admin-dash');
     if (window.jcLockPageScroll) window.jcLockPageScroll();
-    if (dash) { dash.classList.add('open'); dash.scrollTop = 0; renderAdminMenuList(); renderAdminPhotoList(); renderAdminAvisList(); return; }
+    if (dash) { dash.classList.add('open'); dash.scrollTop = 0; renderAdminMenuList(); renderAdminPhotoList(); renderAdminAvisList(); renderAdminCalc(); return; }
 
     const style = document.createElement('style');
     style.textContent = `
@@ -455,6 +455,9 @@
         .jn-admin-menu-card .jn-row{ flex-direction:column; }
         .jn-admin-field{ min-width:100%; }
         .jn-admin-menu-actions button, #jn-admin-close, #jn-admin-logout{ min-height:40px; }
+        #jn-calc-add-menu, #jn-calc-add-item, #jn-calc-add-custom{ width:100%; min-height:42px; margin-top:4px; }
+        #jn-tab-calc .jn-row{ align-items:stretch !important; }
+        #jn-tab-calc select, #jn-tab-calc input{ font-size:0.95rem; }
       }
     `;
     document.head.appendChild(style);
@@ -479,6 +482,7 @@
           <div class="jn-admin-tab" data-tab="photos">Photos</div>
           <div class="jn-admin-tab" data-tab="avis">Avis clients</div>
           <div class="jn-admin-tab" data-tab="reglages">Réglages</div>
+          <div class="jn-admin-tab" data-tab="calc">🧮 Calculatrice</div>
         </div>
         <div class="jn-admin-tabpanel active" id="jn-tab-menus">
           <div id="jn-admin-menu-list"></div>
@@ -515,6 +519,56 @@
             <div class="jn-admin-menu-actions">
               <button class="jn-admin-save" type="button" id="jn-admin-save-settings">Enregistrer les réglages</button>
             </div>
+          </div>
+        </div>
+        <div class="jn-admin-tabpanel" id="jn-tab-calc">
+          <p class="jn-admin-sub" style="margin-bottom:16px;">Un client vous appelle et passe commande ? Composez sa commande ici en direct : choisissez ses menus, ajoutez les pièces ou demandes spéciales qu'il veut en plus, et le total se calcule tout seul. Vous pourrez ensuite télécharger le récapitulatif pour le lui envoyer.</p>
+
+          <div class="jn-admin-menu-card">
+            <div class="jn-row">
+              <div class="jn-admin-field"><label>Nom du client</label><input type="text" id="jn-calc-client" placeholder="Ex : Mme Dupont"></div>
+              <div class="jn-admin-field" style="max-width:160px;"><label>Nombre de personnes</label><input type="number" id="jn-calc-guests" min="1" value="10"></div>
+              <div class="jn-admin-field" style="max-width:200px;"><label>Date de l'événement</label><input type="date" id="jn-calc-date"></div>
+            </div>
+          </div>
+
+          <div class="jn-admin-menu-card">
+            <label style="display:block; font-family:var(--font-mono); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:8px;">Ajouter un menu (prix / personne)</label>
+            <div class="jn-row" style="align-items:flex-end;">
+              <div class="jn-admin-field" style="flex:2;"><select id="jn-calc-menu-select"></select></div>
+              <div class="jn-admin-field" style="max-width:140px;"><label>Personnes</label><input type="number" id="jn-calc-menu-guests" min="1" value="10"></div>
+              <button id="jn-calc-add-menu" type="button" class="jn-admin-save" style="margin-bottom:1px;">+ Ajouter</button>
+            </div>
+
+            <label style="display:block; font-family:var(--font-mono); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.4px; margin:18px 0 8px;">Ajouter une pièce / un article à la carte</label>
+            <div class="jn-row" style="align-items:flex-end;">
+              <div class="jn-admin-field" style="flex:2;"><select id="jn-calc-item-select"></select></div>
+              <div class="jn-admin-field" style="max-width:110px;"><label>Quantité</label><input type="number" id="jn-calc-item-qty" min="1" value="1"></div>
+              <button id="jn-calc-add-item" type="button" class="jn-admin-save" style="margin-bottom:1px;">+ Ajouter</button>
+            </div>
+
+            <label style="display:block; font-family:var(--font-mono); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.4px; margin:18px 0 8px;">Ajouter une ligne libre (demande spéciale du client)</label>
+            <div class="jn-row" style="align-items:flex-end;">
+              <div class="jn-admin-field" style="flex:2;"><input type="text" id="jn-calc-custom-label" placeholder="Ex : Pièce montée supplémentaire"></div>
+              <div class="jn-admin-field" style="max-width:110px;"><label>Prix unit. (€)</label><input type="number" step="0.01" id="jn-calc-custom-price" value="0"></div>
+              <div class="jn-admin-field" style="max-width:100px;"><label>Quantité</label><input type="number" min="1" id="jn-calc-custom-qty" value="1"></div>
+              <button id="jn-calc-add-custom" type="button" class="jn-admin-save" style="margin-bottom:1px;">+ Ajouter</button>
+            </div>
+          </div>
+
+          <div id="jn-calc-lines"></div>
+
+          <div class="jn-admin-menu-card" style="background:#FBF3F1;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px;">
+              <div style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted,#8C5D6B);">Total pour <span id="jn-calc-total-guests">10</span> personne(s)</div>
+              <div style="font-family:var(--font-display,serif); font-size:1.7rem; color:var(--text,#4A2032); font-weight:700;" id="jn-calc-total">0,00&nbsp;€</div>
+            </div>
+            <div style="font-size:0.82rem; color:var(--text-muted,#8C5D6B); margin-top:4px;" id="jn-calc-per-person"></div>
+          </div>
+
+          <div class="jn-admin-menu-actions">
+            <button id="jn-calc-reset" type="button" class="jn-admin-delete">Tout effacer</button>
+            <button id="jn-calc-download" type="button" class="jn-admin-save">⬇ Télécharger le récapitulatif</button>
           </div>
         </div>
       </div>`;
@@ -615,11 +669,192 @@
       renderAdminPhotoList();
     }
 
+    // Calculatrice de commande
+    document.getElementById('jn-calc-guests').addEventListener('input', renderAdminCalcTotals);
+
+    document.getElementById('jn-calc-add-menu').addEventListener('click', () => {
+      const sel = document.getElementById('jn-calc-menu-select');
+      const menu = menusCache.find((m) => m.id === sel.value);
+      if (!menu) { alert('Ajoutez d\'abord un menu depuis l\'onglet Menus.'); return; }
+      const guestsForMenu = parseInt(document.getElementById('jn-calc-menu-guests').value, 10) || 1;
+      calcLines.push({ label: (menu.title || 'Menu') + ' (menu / pers.)', unitPrice: menu.pricePerPerson || 0, qty: guestsForMenu });
+      const guestsMain = document.getElementById('jn-calc-guests');
+      if (guestsMain && (!calcLines.length || calcLines.length === 1)) guestsMain.value = guestsForMenu;
+      renderAdminCalcLines();
+      renderAdminCalcTotals();
+    });
+
+    document.getElementById('jn-calc-add-item').addEventListener('click', () => {
+      const sel = document.getElementById('jn-calc-item-select');
+      if (!sel.value) { alert('Aucune pièce disponible : ajoutez des pièces à un menu depuis l\'onglet Menus.'); return; }
+      const parts = sel.value.split('::');
+      const menu = menusCache.find((m) => m.id === parts[0]);
+      const item = menu && menu.items ? menu.items[parseInt(parts[1], 10)] : null;
+      if (!item) return;
+      const qty = parseInt(document.getElementById('jn-calc-item-qty').value, 10) || 1;
+      calcLines.push({ label: item.name + (item.unit ? ' (' + item.unit + ')' : ''), unitPrice: item.price || 0, qty: qty });
+      renderAdminCalcLines();
+      renderAdminCalcTotals();
+    });
+
+    document.getElementById('jn-calc-add-custom').addEventListener('click', () => {
+      const labelInput = document.getElementById('jn-calc-custom-label');
+      const label = labelInput.value.trim();
+      if (!label) { alert('Merci de renseigner un nom pour cette ligne.'); return; }
+      const price = parseFloat(document.getElementById('jn-calc-custom-price').value) || 0;
+      const qty = parseInt(document.getElementById('jn-calc-custom-qty').value, 10) || 1;
+      calcLines.push({ label: label, unitPrice: price, qty: qty });
+      labelInput.value = '';
+      document.getElementById('jn-calc-custom-price').value = '0';
+      document.getElementById('jn-calc-custom-qty').value = '1';
+      renderAdminCalcLines();
+      renderAdminCalcTotals();
+    });
+
+    document.getElementById('jn-calc-reset').addEventListener('click', () => {
+      if (calcLines.length && !confirm('Effacer toute la commande en cours ?')) return;
+      calcLines = [];
+      document.getElementById('jn-calc-client').value = '';
+      document.getElementById('jn-calc-date').value = '';
+      document.getElementById('jn-calc-guests').value = 10;
+      renderAdminCalcLines();
+      renderAdminCalcTotals();
+    });
+
+    document.getElementById('jn-calc-download').addEventListener('click', downloadCalcRecap);
+
     dash.classList.add('open');
     dash.scrollTop = 0;
     renderAdminMenuList();
     renderAdminPhotoList();
     renderAdminAvisList();
+    renderAdminCalc();
+  }
+
+  // ---- Calculatrice de commande (onglet admin) ---------------------------
+  let calcLines = [];
+
+  function calcLineTotal(line) {
+    return (line.unitPrice || 0) * (line.qty || 0);
+  }
+
+  function renderAdminCalcSelectors() {
+    const menuSelect = document.getElementById('jn-calc-menu-select');
+    if (menuSelect) {
+      menuSelect.innerHTML = menusCache.map((m) => `<option value="${m.id}">${(m.title || 'Menu')} — ${window.JN.formatEuro(m.pricePerPerson)} / pers.</option>`).join('') || '<option value="">Aucun menu — créez-en un dans l\'onglet Menus</option>';
+    }
+    const itemSelect = document.getElementById('jn-calc-item-select');
+    if (itemSelect) {
+      const opts = [];
+      menusCache.forEach((m) => {
+        (m.items || []).forEach((it, ii) => {
+          opts.push(`<option value="${m.id}::${ii}">${m.title} — ${it.name} (${window.JN.formatEuro(it.price)}${it.unit ? ' / ' + it.unit : ''})</option>`);
+        });
+      });
+      itemSelect.innerHTML = opts.join('') || '<option value="">Aucune pièce disponible</option>';
+    }
+  }
+
+  function renderAdminCalcLines() {
+    const wrap = document.getElementById('jn-calc-lines');
+    if (!wrap) return;
+    wrap.innerHTML = calcLines.map((l, i) => `
+      <div class="jn-admin-menu-card" data-idx="${i}" style="padding:14px 16px; margin-bottom:10px;">
+        <div class="jn-row" style="align-items:flex-end; margin-bottom:0;">
+          <div class="jn-admin-field" style="flex:2;"><label>Article</label><input type="text" data-calc-field="label" value="${(l.label || '').replace(/"/g, '&quot;')}"></div>
+          <div class="jn-admin-field" style="max-width:110px;"><label>Prix unit. (€)</label><input type="number" step="0.01" data-calc-field="unitPrice" value="${l.unitPrice}"></div>
+          <div class="jn-admin-field" style="max-width:90px;"><label>Qté</label><input type="number" min="0" data-calc-field="qty" value="${l.qty}"></div>
+          <div class="jn-admin-field jn-calc-line-sub" style="max-width:120px;"><label>Sous-total</label><div style="padding:9px 0; font-weight:700; color:var(--text,#4A2032);">${window.JN.formatEuro(calcLineTotal(l))}</div></div>
+          <button class="jn-admin-item-delete" type="button" title="Supprimer" style="margin-bottom:9px;">✕</button>
+        </div>
+      </div>`).join('') || '<p style="color:var(--text-muted,#8C5D6B); font-size:0.9rem;">Aucun article ajouté pour le moment — utilisez les champs ci-dessus.</p>';
+
+    wrap.querySelectorAll('.jn-admin-menu-card').forEach((card) => {
+      const idx = parseInt(card.dataset.idx, 10);
+      card.querySelectorAll('[data-calc-field]').forEach((f) => {
+        f.addEventListener('input', () => {
+          const field = f.dataset.calcField;
+          calcLines[idx][field] = (field === 'unitPrice' || field === 'qty') ? (parseFloat(f.value) || 0) : f.value;
+          const subEl = card.querySelector('.jn-calc-line-sub div');
+          if (subEl) subEl.textContent = window.JN.formatEuro(calcLineTotal(calcLines[idx]));
+          renderAdminCalcTotals();
+        });
+      });
+      card.querySelector('.jn-admin-item-delete').addEventListener('click', () => {
+        calcLines.splice(idx, 1);
+        renderAdminCalcLines();
+        renderAdminCalcTotals();
+      });
+    });
+  }
+
+  function renderAdminCalcTotals() {
+    const guestsInput = document.getElementById('jn-calc-guests');
+    const guests = guestsInput ? (parseInt(guestsInput.value, 10) || 0) : 0;
+    const total = calcLines.reduce((sum, l) => sum + calcLineTotal(l), 0);
+    const totalEl = document.getElementById('jn-calc-total');
+    const guestsEl = document.getElementById('jn-calc-total-guests');
+    const perPersonEl = document.getElementById('jn-calc-per-person');
+    if (totalEl) totalEl.textContent = window.JN.formatEuro(total);
+    if (guestsEl) guestsEl.textContent = guests || '—';
+    if (perPersonEl) perPersonEl.textContent = guests > 0 ? ('Soit ' + window.JN.formatEuro(total / guests) + ' par personne') : '';
+  }
+
+  function renderAdminCalc() {
+    renderAdminCalcSelectors();
+    renderAdminCalcLines();
+    renderAdminCalcTotals();
+  }
+
+  function downloadCalcRecap() {
+    if (!calcLines.length) { alert('Ajoutez au moins un article avant de télécharger le récapitulatif.'); return; }
+    const client = (document.getElementById('jn-calc-client').value || '').trim() || 'Client';
+    const guests = document.getElementById('jn-calc-guests').value || '';
+    const eventDateVal = document.getElementById('jn-calc-date').value;
+    const dateLabel = eventDateVal ? new Date(eventDateVal + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    const total = calcLines.reduce((sum, l) => sum + calcLineTotal(l), 0);
+    const s = window.JN.getSettings();
+
+    const rowsHtml = calcLines.map((l) => `
+      <tr>
+        <td style="padding:10px 12px; border-bottom:1px solid #eee;">${(l.label || '').replace(/</g, '&lt;')}</td>
+        <td style="padding:10px 12px; border-bottom:1px solid #eee; text-align:center;">${l.qty}</td>
+        <td style="padding:10px 12px; border-bottom:1px solid #eee; text-align:right;">${window.JN.formatEuro(l.unitPrice)}</td>
+        <td style="padding:10px 12px; border-bottom:1px solid #eee; text-align:right; font-weight:600;">${window.JN.formatEuro(calcLineTotal(l))}</td>
+      </tr>`).join('');
+
+    const html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">' +
+      '<title>Devis — ' + client.replace(/</g, '&lt;') + '</title>' +
+      '<style>' +
+      'body{ font-family: Georgia, "Times New Roman", serif; color:#4A2032; max-width:700px; margin:40px auto; padding:0 20px; }' +
+      'h1{ font-size:1.5rem; margin-bottom:4px; }' +
+      '.sub{ color:#8C5D6B; font-size:0.9rem; margin-bottom:24px; line-height:1.6; }' +
+      'table{ width:100%; border-collapse:collapse; margin-bottom:20px; }' +
+      'th{ text-align:left; padding:10px 12px; background:#FBF3F1; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.4px; }' +
+      'th:nth-child(2){ text-align:center; } th:nth-child(3), th:nth-child(4){ text-align:right; }' +
+      '.total-row{ display:flex; justify-content:space-between; font-size:1.3rem; font-weight:700; padding:14px 0; border-top:2px solid #4A2032; margin-top:6px; }' +
+      '.footer{ margin-top:30px; font-size:0.85rem; color:#8C5D6B; line-height:1.6; }' +
+      '@media print { body{ margin:0; } }' +
+      '</style></head><body>' +
+      '<h1>Récapitulatif de commande</h1>' +
+      '<div class="sub">Client : ' + client.replace(/</g, '&lt;') + (dateLabel ? ' — Événement le ' + dateLabel : '') + (guests ? ' — ' + guests + ' personne(s)' : '') + '<br>' +
+      'Établi le ' + new Date().toLocaleDateString('fr-FR') + ' par Jennifer Événement</div>' +
+      '<table><thead><tr><th>Article</th><th>Qté</th><th>Prix unit.</th><th>Sous-total</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+      '<div class="total-row"><span>Total estimé</span><span>' + window.JN.formatEuro(total) + '</span></div>' +
+      '<div class="footer">' + (s.phone ? 'Tél : ' + s.phone + '<br>' : '') + (s.email ? 'Email : ' + s.email : '') +
+      '<br><br>Ce document est une estimation et peut être ajusté selon vos besoins.</div>' +
+      '</body></html>';
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const safeClient = client.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    a.href = url;
+    a.download = 'devis-' + (safeClient || 'client') + '.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 
   function renderAdminMenuList() {

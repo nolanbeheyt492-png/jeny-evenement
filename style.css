@@ -199,8 +199,18 @@ header.jn-scrolled .brand-logo-img{height:52px;}
 .hero{position:relative; padding:120px 24px 70px; text-align:center; overflow:hidden;}
 .hero::before{
   content:""; position:absolute; inset:0; z-index:-1;
-  background:radial-gradient(circle at 50% -10%, rgba(168,112,58,0.14), transparent 55%);
+  background:
+    radial-gradient(circle at 50% -10%, rgba(168,112,58,0.14), transparent 55%),
+    radial-gradient(circle at 12% 30%, rgba(214,122,147,0.10), transparent 42%),
+    radial-gradient(circle at 88% 20%, rgba(201,151,78,0.12), transparent 40%);
 }
+.hero-ring{
+  position:absolute; border-radius:50%; border:1px solid rgba(201,151,78,0.22);
+  pointer-events:none; z-index:-1;
+}
+.hero-ring.r1{ width:520px; height:520px; top:-260px; left:50%; margin-left:-260px; }
+.hero-ring.r2{ width:340px; height:340px; top:-90px; right:-120px; border-color:rgba(214,122,147,0.16); }
+@media (max-width:768px){ .hero-ring{ display:none; } }
 .eyebrow{
   display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:0.75rem;
   text-transform:uppercase; letter-spacing:1.5px; color:var(--chalk); margin-bottom:20px;
@@ -257,7 +267,9 @@ header.jn-scrolled .brand-logo-img{height:52px;}
 
 /* SERVICES / cards génériques (utilisées par plusieurs pages) */
 .grid-services{display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:28px;}
-.card-service{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-lg); padding:36px; transition:all 0.25s; box-shadow:0 1px 2px rgba(33,27,18,0.03);}
+.card-service{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-lg); padding:36px; transition:all 0.25s; box-shadow:0 1px 2px rgba(33,27,18,0.03); position:relative; overflow:hidden;}
+.card-service::before{content:""; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), var(--chalk)); transform:scaleX(0); transform-origin:left; transition:transform .35s ease;}
+.card-service:hover::before{transform:scaleX(1);}
 .card-service:hover{border-color:var(--accent); box-shadow:0 14px 28px -12px rgba(33,27,18,0.14); transform:translateY(-3px);}
 .card-service h3{font-size:1.3rem; font-weight:700; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; color:var(--text);}
 .card-service ul{list-style:none; margin-top:20px;}
@@ -726,7 +738,15 @@ footer{padding:56px 24px; border-top:1px solid var(--border); color:var(--text-m
 .cert-card{
   background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px;
   box-shadow:0 1px 2px rgba(33,27,18,0.03); transition:all .25s; display:flex; flex-direction:column;
+  position:relative; overflow:hidden;
 }
+.cert-card::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--accent), var(--chalk)); transform:scaleX(0); transform-origin:left; transition:transform .35s ease;
+}
+.cert-card:hover::before{transform:scaleX(1);}
+.cert-card:nth-child(even) .icon-badge{background:var(--chalk-soft);}
+.cert-card:nth-child(even) .icon-badge svg{stroke:var(--chalk);}
 .cert-card:hover{border-color:var(--accent); transform:translateY(-3px); box-shadow:0 14px 28px -14px rgba(33,27,18,0.18);}
 .cert-card h3{font-size:1.15rem; color:var(--text); margin-bottom:8px; font-weight:700;}
 .cert-card p{color:var(--text-muted); font-size:0.92rem; line-height:1.6; margin-bottom:20px; flex:1;}
