@@ -619,9 +619,31 @@
     emailStatus.textContent = '';
     emailStatus.className = 'jn-pdf-email-status';
     emailInput.value = '';
+
+    // Ramène l'écran en haut (sans animation) pour être sûr que le modal soit visible immédiatement,
+    // même sur mobile où la barre d'adresse peut décaler la zone visible.
+    window.scrollTo(0, 0);
+
+    // Bloque le défilement de la page tant que le modal est ouvert (fond ET reste de la page figés).
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+
     modal.style.display = 'flex';
 
-    const close = () => { modal.style.display = 'none'; };
+    const close = () => {
+      modal.style.display = 'none';
+      // Redonne la main au scroll et remet la page exactement où elle était.
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      window.scrollTo(0, scrollY);
+    };
     closeBtn.onclick = close;
     modal.onclick = (e) => { if (e.target === modal) close(); };
 
