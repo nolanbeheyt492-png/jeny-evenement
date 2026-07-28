@@ -259,7 +259,7 @@ header.jn-scrolled .brand-logo-img{height:52px;}
 .ornament-divider .ornament-icon svg{ width:100%; height:100%; fill:currentColor; }
 .section-alt{background:var(--bg-alt);}
 .section-head{max-width:600px; margin:0 auto 64px; text-align:center;}
-.section-head h2{font-size:clamp(1.9rem, 3.8vw, 2.6rem); font-weight:700; letter-spacing:-0.6px; margin-bottom:16px; color:var(--text);}
+.section-head h1,.section-head h2{font-size:clamp(1.9rem, 3.8vw, 2.6rem); font-weight:700; letter-spacing:-0.6px; margin-bottom:16px; color:var(--text);}
 .section-head p{color:var(--text-muted); font-size:1.08rem;}
 
 /* --- Icônes (remplacent les emojis dans les blocs clés) --- */
@@ -338,7 +338,7 @@ footer{padding:56px 24px; border-top:1px solid var(--border); color:var(--text-m
 
   .section{padding:52px 18px;}
   .section-head{margin-bottom:34px;}
-  .section-head h2{font-size:1.6rem;}
+  .section-head h1,.section-head h2{font-size:1.6rem;}
   .section-head p{font-size:1rem;}
 
   .grid-features, .grid-testimonials, .checklist-grid, .grid-commitments,
@@ -409,7 +409,7 @@ footer{padding:56px 24px; border-top:1px solid var(--border); color:var(--text-m
 @media (max-width:380px){
   .hero h1{font-size:1.7rem;}
   .brand{font-size:1.05rem;}
-  .section-head h2{font-size:1.4rem;}
+  .section-head h1,.section-head h2{font-size:1.4rem;}
   .grid-features, .grid-commitments, .menu-grid, .cert-grid, .grid-testimonials,
   .checklist-grid, .process-track, .grid-services, .booking-mini-grid, .form-grid{
     grid-template-columns:1fr !important;
@@ -439,7 +439,7 @@ footer{padding:56px 24px; border-top:1px solid var(--border); color:var(--text-m
   content:""; position:absolute; inset:0; pointer-events:none;
   background:radial-gradient(circle at 100% 0%, rgba(168,112,58,0.25), transparent 55%);
 }
-.estimator-box h2, .estimator-box .section-head h2{color:#fff;}
+.estimator-box h1,.estimator-box h2, .estimator-box .section-head h1, .estimator-box .section-head h2{color:#fff;}
 .estimator-grid{display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:28px; align-items:end; position:relative;}
 .estimator-field label{font-family:var(--font-mono); display:block; font-size:0.72rem; font-weight:600; color:#E8C9D2; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:8px;}
 .estimator-field select, .estimator-field input{
@@ -936,8 +936,8 @@ footer{padding:56px 24px; border-top:1px solid var(--border); color:var(--text-m
 @media (max-width:700px){ .jn-stat{ padding:0 26px; } }
 
 /* Titres de section : soulignement animé au survol de la zone */
-.section-head h2{ position:relative; display:inline-block; }
-.section-head h2::after{
+.section-head h1,.section-head h2{ position:relative; display:inline-block; }
+.section-head h1::after,.section-head h2::after{
   content:""; position:absolute; left:50%; bottom:-6px; transform:translateX(-50%); width:0%; height:3px;
   background:linear-gradient(90deg, var(--accent), var(--chalk)); border-radius:2px; transition:width .5s ease;
 }
