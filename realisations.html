@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-  .gallery-wrap { position:relative; }
+  .gallery-wrap { position:relative; overflow:hidden; }
   .gallery-blob { position:absolute; border-radius:50%; filter:blur(60px); opacity:0.35; z-index:0; pointer-events:none; animation: jn-blob-float 14s ease-in-out infinite; }
   .gallery-blob.b1 { width:280px; height:280px; background:radial-gradient(circle, var(--accent), transparent 70%); top:-80px; left:-60px; animation-delay:0s; }
   .gallery-blob.b2 { width:320px; height:320px; background:radial-gradient(circle, var(--chalk, #E8A0B4), transparent 70%); bottom:-100px; right:-80px; animation-delay:-6s; }

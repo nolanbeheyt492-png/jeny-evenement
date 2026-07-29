@@ -888,7 +888,7 @@ footer{padding:56px 24px; border-top:1px solid var(--border); color:var(--text-m
 }
 
 @media (max-width:768px){
-  .jc-admin-modal-lg{width:100vw; height:100vh; max-height:100vh; border-radius:0;}
+  .jc-admin-modal-lg{width:100vw; height:100vh; height:100dvh; max-height:100vh; max-height:100dvh; border-radius:0; padding-bottom:env(safe-area-inset-bottom);}
   .jc-admin-body{flex-direction:column;}
   .jc-admin-sidebar{
     width:100%; flex-direction:row; overflow-x:auto; padding:10px 14px; border-right:none;
