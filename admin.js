@@ -888,18 +888,22 @@
     renderAdminCalcTotals();
   }
 
-  let html2pdfLoadPromise = null;
-  function loadHtml2Pdf() {
-    if (window.html2pdf) return Promise.resolve();
-    if (html2pdfLoadPromise) return html2pdfLoadPromise;
-    html2pdfLoadPromise = new Promise((resolve, reject) => {
+  // Génération du PDF en texte réel via jsPDF (plus de capture d'écran / html2canvas :
+  // c'était la cause des pages blanches, car cette technique dépend du rendu visuel du
+  // navigateur au moment de la capture, ce qui est fragile). Ici, chaque ligne, chiffre
+  // et image est dessiné directement dans le PDF, donc rien ne peut sortir "vide".
+  let jsPdfLoadPromise = null;
+  function loadJsPdf() {
+    if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve();
+    if (jsPdfLoadPromise) return jsPdfLoadPromise;
+    jsPdfLoadPromise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
       script.onload = () => resolve();
-      script.onerror = () => { html2pdfLoadPromise = null; reject(new Error('html2pdf load failed')); };
+      script.onerror = () => { jsPdfLoadPromise = null; reject(new Error('jsPDF load failed')); };
       document.head.appendChild(script);
     });
-    return html2pdfLoadPromise;
+    return jsPdfLoadPromise;
   }
 
   function downloadCalcRecap() {
@@ -916,62 +920,6 @@
     const acompte = totalTTC * 0.3;
     const s = window.JN.getSettings();
 
-    const rowsHtml = calcLines.map((l) => `
-      <tr>
-        <td style="padding:16px 18px; border-bottom:1px solid #eee;">${(l.label || '').replace(/</g, '&lt;')}${(l.includedItems && l.includedItems.length) ? ' *<br><span style="font-size:0.85em; color:#8C5D6B; font-weight:normal;">Comprend : ' + l.includedItems.map(n => n.replace(/</g, '&lt;')).join(', ') + '</span>' : ''}</td>
-        <td style="padding:16px 18px; border-bottom:1px solid #eee; text-align:center;">${l.qty}</td>
-        <td style="padding:16px 18px; border-bottom:1px solid #eee; text-align:right;">${window.JN.formatEuro(l.unitPrice)}</td>
-        <td style="padding:16px 18px; border-bottom:1px solid #eee; text-align:right; font-weight:600;">${window.JN.formatEuro(calcLineTotal(l))}</td>
-      </tr>`).join('');
-
-    const html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">' +
-      '<title>Devis — ' + client.replace(/</g, '&lt;') + '</title>' +
-      '<style>' +
-      'body{ font-family: Georgia, "Times New Roman", serif; color:#4A2032; max-width:1000px; margin:40px auto; padding:0 40px; font-size:22px; line-height:1.5; }' +
-      'h1{ font-size:2.3rem; margin-bottom:8px; }' +
-      '.sub{ color:#8C5D6B; font-size:1.1rem; margin-bottom:28px; line-height:1.7; }' +
-      'table{ width:100%; border-collapse:collapse; margin-bottom:24px; font-size:1.1rem; }' +
-      'th{ text-align:left; padding:16px 18px; background:#FBF3F1; font-size:0.9rem; text-transform:uppercase; letter-spacing:0.4px; }' +
-      'td{ padding:16px 18px; }' +
-      'th:nth-child(2){ text-align:center; } th:nth-child(3), th:nth-child(4){ text-align:right; }' +
-      '.totals{ margin-top:8px; }' +
-      '.totals-line{ display:flex; justify-content:space-between; font-size:1.15rem; padding:6px 0; }' +
-      '.total-row{ display:flex; justify-content:space-between; font-size:1.8rem; font-weight:700; padding:18px 0; border-top:2px solid #4A2032; margin-top:8px; }' +
-      '.acompte-box{ margin-top:24px; padding:18px 20px; background:#FBF3F1; border-radius:8px; font-size:1.05rem; }' +
-      '.footer{ margin-top:36px; font-size:1.05rem; color:#8C5D6B; line-height:1.7; }' +
-      '.footnote{ margin-top:18px; font-size:0.95rem; color:#8C5D6B; line-height:1.6; font-style:italic; }' +
-      '.signatures{ margin-top:50px; display:flex; gap:40px; }' +
-      '.signature-box{ flex:1; }' +
-      '.signature-box .label{ font-size:1rem; font-weight:700; margin-bottom:8px; }' +
-      '.signature-box .mention{ font-size:0.9rem; color:#8C5D6B; margin-bottom:14px; font-style:italic; }' +
-      '.signature-area{ border:1px dashed #C9A8B3; border-radius:8px; height:120px; display:flex; align-items:center; justify-content:center; }' +
-      '.signature-area img{ max-height:100px; max-width:90%; }' +
-      '.signature-area span{ color:#C9A8B3; font-size:0.9rem; }' +
-      '@media print { body{ margin:0; max-width:100%; padding:20px 30px; } }' +
-      '</style></head><body>' +
-      '<h1>Devis</h1>' +
-      '<div class="sub">Client : ' + client.replace(/</g, '&lt;') + (dateLabel ? ' — Événement le ' + dateLabel : '') + (guests ? ' — ' + guests + ' personne(s)' : '') + '<br>' +
-      'Établi le ' + new Date().toLocaleDateString('fr-FR') + ' par Jennifer Événement</div>' +
-      '<table><thead><tr><th>Article</th><th>Qté</th><th>Prix unit.</th><th>Sous-total</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
-      '<div class="totals">' +
-      (applyTva ?
-        '<div class="totals-line"><span>Total HT</span><span>' + window.JN.formatEuro(totalHT) + '</span></div>' +
-        '<div class="totals-line"><span>TVA (5,5%)</span><span>' + window.JN.formatEuro(tvaAmount) + '</span></div>' +
-        '<div class="total-row"><span>Total TTC</span><span>' + window.JN.formatEuro(totalTTC) + '</span></div>'
-        :
-        '<div class="total-row"><span>Total (net, sans TVA)</span><span>' + window.JN.formatEuro(totalTTC) + '</span></div>'
-      ) +
-      '</div>' +
-      '<div class="acompte-box">Un acompte de <strong>30%</strong>, soit <strong>' + window.JN.formatEuro(acompte) + '</strong>, sera demandé à la signature du présent devis. Le solde sera à régler selon les modalités convenues.</div>' +
-      '<div class="footnote">* Nombre de choix inclus par pièce : de 30 à 60 pièces, 2 choix disponibles. Au-delà de 60 pièces, 3 choix disponibles.</div>' +
-      '<div class="signatures">' +
-      '<div class="signature-box"><div class="label">Bon pour accord</div><div class="mention">Faire précéder la signature de la mention manuscrite « Bon pour accord »</div><div class="signature-area"><span>Signature du client</span></div></div>' +
-      '<div class="signature-box"><div class="label">Jennifer Événement</div><div class="mention">&nbsp;</div><div class="signature-area"><img src="' + SIGNATURE_JN_B64 + '" alt="Signature Jennifer Événement"></div></div>' +
-      '</div>' +
-      '<div class="footer">' + (s.phone ? 'Tél : ' + s.phone + '<br>' : '') + (s.email ? 'Email : ' + s.email : '') +
-      '<br><br>Ce document est une estimation et peut être ajusté selon vos besoins.</div>' +
-      '</body></html>';
-
     const safeClient = client.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
     const fileBase = 'devis-' + (safeClient || 'client');
 
@@ -979,57 +927,201 @@
     const restoreBtn = () => { if (btn) { btn.disabled = false; btn.textContent = '⬇ Télécharger le récapitulatif'; } };
     if (btn) { btn.disabled = true; btn.textContent = 'Génération du PDF…'; }
 
-    loadHtml2Pdf().then(() => {
-      const container = document.createElement('div');
-      // Important : on ne place plus le container très loin hors-écran (ex: left:-99999px),
-      // car html2canvas peut alors capturer une zone vide et produire un PDF blanc.
-      // On le garde dans la zone visible du document mais invisible via opacity + pointer-events.
-      container.style.position = 'fixed';
-      container.style.left = '0';
-      container.style.top = '0';
-      container.style.width = '900px';
-      container.style.opacity = '0';
-      container.style.pointerEvents = 'none';
-      container.style.zIndex = '-1';
-      container.innerHTML = html.replace(/^[\s\S]*<body>/, '<div>').replace(/<\/body>[\s\S]*$/, '</div>');
-      document.body.appendChild(container);
+    loadJsPdf().then(() => {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+        const pageW = doc.internal.pageSize.getWidth();
+        const pageH = doc.internal.pageSize.getHeight();
+        const marginL = 15, marginR = 15;
+        const contentW = pageW - marginL - marginR;
+        const colorMain = [74, 32, 50];   // #4A2032
+        const colorMuted = [140, 93, 107]; // #8C5D6B
+        const colorBg = [251, 243, 241];   // #FBF3F1
+        let y = 20;
 
-      // Petit délai pour laisser le temps aux images (logo, signature) de se charger
-      // avant que html2canvas ne prenne la "photo" du contenu.
-      const waitForRender = new Promise((resolve) => setTimeout(resolve, 200));
+        function checkPageBreak(neededSpace) {
+          if (y + neededSpace > pageH - 20) {
+            doc.addPage();
+            y = 20;
+          }
+        }
 
-      waitForRender.then(() => window.html2pdf().set({
-        margin: 10,
-        filename: fileBase + '.pdf',
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 900 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      }).from(container).save()).then(() => {
-        document.body.removeChild(container);
+        // Titre
+        doc.setTextColor(...colorMain);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(26);
+        doc.text('Devis', marginL, y);
+        y += 10;
+
+        // Sous-titre (client, date événement, invités)
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+        doc.setTextColor(...colorMuted);
+        let subLine = 'Client : ' + client;
+        if (dateLabel) subLine += ' — Événement le ' + dateLabel;
+        if (guests) subLine += ' — ' + guests + ' personne(s)';
+        doc.text(subLine, marginL, y);
+        y += 6;
+        doc.text('Établi le ' + new Date().toLocaleDateString('fr-FR') + ' par Jennifer Événement', marginL, y);
+        y += 10;
+
+        // En-têtes du tableau
+        const col1 = marginL, col2 = marginL + contentW * 0.58, col3 = marginL + contentW * 0.74, col4 = marginL + contentW;
+        function drawTableHeader() {
+          doc.setFillColor(...colorBg);
+          doc.rect(marginL, y - 5, contentW, 8, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.setTextColor(...colorMain);
+          doc.text('ARTICLE', col1 + 2, y);
+          doc.text('QTÉ', col2, y, { align: 'center' });
+          doc.text('PRIX UNIT.', col3, y, { align: 'right' });
+          doc.text('SOUS-TOTAL', col4, y, { align: 'right' });
+          y += 8;
+        }
+        checkPageBreak(20);
+        drawTableHeader();
+
+        // Lignes du devis
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10.5);
+        calcLines.forEach((l) => {
+          const label = l.label || '';
+          const included = (l.includedItems && l.includedItems.length) ? l.includedItems.join(', ') : '';
+          const labelLines = doc.splitTextToSize(label, contentW * 0.55);
+          const includedLines = included ? doc.splitTextToSize('Comprend : ' + included, contentW * 0.55) : [];
+          const rowHeight = 6 + (labelLines.length - 1) * 5 + includedLines.length * 4.5 + 4;
+          checkPageBreak(rowHeight + 5);
+
+          doc.setTextColor(...colorMain);
+          doc.setFont('helvetica', 'normal');
+          doc.text(labelLines, col1 + 2, y);
+          doc.text(String(l.qty), col2, y, { align: 'center' });
+          doc.text(window.JN.formatEuro(l.unitPrice), col3, y, { align: 'right' });
+          doc.setFont('helvetica', 'bold');
+          doc.text(window.JN.formatEuro(calcLineTotal(l)), col4, y, { align: 'right' });
+
+          let lineY = y + (labelLines.length - 1) * 5;
+          if (includedLines.length) {
+            doc.setFont('helvetica', 'italic');
+            doc.setFontSize(8.5);
+            doc.setTextColor(...colorMuted);
+            lineY += 4.5;
+            doc.text(includedLines, col1 + 2, lineY);
+            lineY += (includedLines.length - 1) * 4.5;
+            doc.setFontSize(10.5);
+          }
+          y = lineY + 6;
+          doc.setDrawColor(230, 230, 230);
+          doc.line(marginL, y - 4, marginL + contentW, y - 4);
+        });
+
+        y += 4;
+        checkPageBreak(35);
+
+        // Totaux
+        doc.setFontSize(11);
+        doc.setTextColor(...colorMain);
+        if (applyTva) {
+          doc.setFont('helvetica', 'normal');
+          doc.text('Total HT', col1, y);
+          doc.text(window.JN.formatEuro(totalHT), col4, y, { align: 'right' });
+          y += 6;
+          doc.text('TVA (5,5%)', col1, y);
+          doc.text(window.JN.formatEuro(tvaAmount), col4, y, { align: 'right' });
+          y += 8;
+          doc.setDrawColor(...colorMain);
+          doc.line(marginL, y - 5, marginL + contentW, y - 5);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(15);
+          doc.text('Total TTC', col1, y);
+          doc.text(window.JN.formatEuro(totalTTC), col4, y, { align: 'right' });
+          y += 10;
+        } else {
+          doc.setDrawColor(...colorMain);
+          doc.line(marginL, y - 3, marginL + contentW, y - 3);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(15);
+          doc.text('Total (net, sans TVA)', col1, y + 4);
+          doc.text(window.JN.formatEuro(totalTTC), col4, y + 4, { align: 'right' });
+          y += 14;
+        }
+
+        // Encadré acompte
+        checkPageBreak(20);
+        doc.setFillColor(...colorBg);
+        doc.roundedRect(marginL, y - 5, contentW, 14, 2, 2, 'F');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(...colorMain);
+        const acompteText = 'Un acompte de 30%, soit ' + window.JN.formatEuro(acompte) + ', sera demandé à la signature du présent devis. Le solde sera à régler selon les modalités convenues.';
+        const acompteLines = doc.splitTextToSize(acompteText, contentW - 8);
+        doc.text(acompteLines, marginL + 4, y + 2);
+        y += 14 + (acompteLines.length - 1) * 5;
+
+        // Note de bas de page
+        checkPageBreak(15);
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(8.5);
+        doc.setTextColor(...colorMuted);
+        const footnote = '* Nombre de choix inclus par pièce : de 30 à 60 pièces, 2 choix disponibles. Au-delà de 60 pièces, 3 choix disponibles.';
+        doc.text(doc.splitTextToSize(footnote, contentW), marginL, y);
+        y += 12;
+
+        // Signatures
+        checkPageBreak(50);
+        const sigColW = (contentW - 10) / 2;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(...colorMain);
+        doc.text('Bon pour accord', marginL, y);
+        doc.text('Jennifer Événement', marginL + sigColW + 10, y);
+        y += 5;
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(8);
+        doc.setTextColor(...colorMuted);
+        doc.text(doc.splitTextToSize('Faire précéder la signature de la mention manuscrite « Bon pour accord »', sigColW), marginL, y);
+        y += 10;
+
+        const boxTop = y;
+        doc.setDrawColor(201, 168, 179);
+        doc.setLineDashPattern([2, 1.5], 0);
+        doc.roundedRect(marginL, boxTop, sigColW, 28, 2, 2, 'S');
+        doc.roundedRect(marginL + sigColW + 10, boxTop, sigColW, 28, 2, 2, 'S');
+        doc.setLineDashPattern([], 0);
+
+        try {
+          doc.addImage(SIGNATURE_JN_B64, 'JPEG', marginL + sigColW + 10 + sigColW / 2 - 20, boxTop + 4, 40, 20);
+        } catch (imgErr) {
+          console.error('Erreur insertion signature :', imgErr);
+        }
+
+        y = boxTop + 28 + 12;
+
+        // Coordonnées
+        checkPageBreak(15);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...colorMuted);
+        if (s.phone) { doc.text('Tél : ' + s.phone, marginL, y); y += 5; }
+        if (s.email) { doc.text('Email : ' + s.email, marginL, y); y += 5; }
+        y += 4;
+        doc.setFont('helvetica', 'italic');
+        doc.text('Ce document est une estimation et peut être ajusté selon vos besoins.', marginL, y);
+
+        doc.save(fileBase + '.pdf');
         restoreBtn();
-      }).catch((err) => {
+      } catch (err) {
         console.error('Erreur génération PDF :', err);
-        document.body.removeChild(container);
         restoreBtn();
-        alert('Le PDF n\'a pas pu être généré. Réessayez, ou vérifiez votre connexion internet.');
-      });
+        alert('Le PDF n\'a pas pu être généré. Réessayez, ou contactez le support technique.');
+      }
     }).catch((err) => {
       console.error('Erreur chargement générateur PDF :', err);
       restoreBtn();
       alert('Impossible de charger le générateur de PDF (connexion internet requise). Réessayez.');
     });
-    return;
-
-    // (code historique conservé plus bas, non exécuté, au cas où)
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileBase + '.html';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 
   function renderAdminMenuList() {
