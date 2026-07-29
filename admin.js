@@ -406,8 +406,20 @@
           // pour se stabiliser avant d'ouvrir le panneau.
           document.getElementById('jn-admin-pass').blur();
           close();
-          window.scrollTo(0, 0);
-          setTimeout(openAdminDashboard, 350);
+          // On attend que le défilement soit vraiment terminé (et que le
+          // clavier virtuel iOS ait fini de se refermer) avant d'ouvrir le
+          // panneau, exactement comme pour la reprise de session : un délai
+          // fixe n'est pas fiable et pouvait laisser le panneau mal cadré,
+          // voire ne jamais s'ouvrir (ce qui donnait l'impression d'un
+          // retour à la page d'accueil).
+          scrollToTopThen(() => {
+            try {
+              openAdminDashboard();
+            } catch (err) {
+              console.error('Ouverture du panneau admin impossible :', err);
+              alert('La connexion a réussi mais le panneau n\'a pas pu s\'ouvrir. Merci de réessayer.');
+            }
+          });
         }
       } catch (err) {
         btn.disabled = false; btn.textContent = 'Se connecter';
