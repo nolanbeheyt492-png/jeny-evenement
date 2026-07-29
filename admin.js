@@ -728,7 +728,8 @@
       const menu = menusCache.find((m) => m.id === sel.value);
       if (!menu) { alert('Ajoutez d\'abord un menu depuis l\'onglet Menus.'); return; }
       const guestsForMenu = parseInt(document.getElementById('jn-calc-menu-guests').value, 10) || 1;
-      calcLines.push({ label: (menu.title || 'Menu') + ' (menu / pers.)', unitPrice: menu.pricePerPerson || 0, qty: guestsForMenu });
+      const includedItems = (menu.items || []).map((it) => it.name + (it.unit ? ' (' + it.unit + ')' : ''));
+      calcLines.push({ label: (menu.title || 'Menu') + ' (menu / pers.)', unitPrice: menu.pricePerPerson || 0, qty: guestsForMenu, includedItems: includedItems });
       const guestsMain = document.getElementById('jn-calc-guests');
       if (guestsMain && (!calcLines.length || calcLines.length === 1)) guestsMain.value = guestsForMenu;
       renderAdminCalcLines();
@@ -818,6 +819,7 @@
           <div class="jn-admin-field jn-calc-line-sub" style="max-width:120px;"><label>Sous-total</label><div style="padding:9px 0; font-weight:700; color:var(--text,#4A2032);">${window.JN.formatEuro(calcLineTotal(l))}</div></div>
           <button class="jn-admin-item-delete" type="button" title="Supprimer" style="margin-bottom:9px;">✕</button>
         </div>
+        ${(l.includedItems && l.includedItems.length) ? `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border,#eee); font-size:0.82rem; color:var(--text-muted,#8C5D6B);"><strong>Comprend :</strong> ${l.includedItems.map(n => n.replace(/</g, '&lt;')).join(', ')} <span style="opacity:0.7;">(sans détail de prix, affiché tel quel sur le devis client)</span></div>` : ''}
       </div>`).join('') || '<p style="color:var(--text-muted,#8C5D6B); font-size:0.9rem;">Aucun article ajouté pour le moment — utilisez les champs ci-dessus.</p>';
 
     wrap.querySelectorAll('.jn-admin-menu-card').forEach((card) => {
@@ -868,7 +870,7 @@
 
     const rowsHtml = calcLines.map((l) => `
       <tr>
-        <td style="padding:10px 12px; border-bottom:1px solid #eee;">${(l.label || '').replace(/</g, '&lt;')}</td>
+        <td style="padding:10px 12px; border-bottom:1px solid #eee;">${(l.label || '').replace(/</g, '&lt;')}${(l.includedItems && l.includedItems.length) ? '<br><span style="font-size:0.82rem; color:#8C5D6B; font-weight:normal;">Comprend : ' + l.includedItems.map(n => n.replace(/</g, '&lt;')).join(', ') + '</span>' : ''}</td>
         <td style="padding:10px 12px; border-bottom:1px solid #eee; text-align:center;">${l.qty}</td>
         <td style="padding:10px 12px; border-bottom:1px solid #eee; text-align:right;">${window.JN.formatEuro(l.unitPrice)}</td>
         <td style="padding:10px 12px; border-bottom:1px solid #eee; text-align:right; font-weight:600;">${window.JN.formatEuro(calcLineTotal(l))}</td>
