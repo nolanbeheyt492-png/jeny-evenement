@@ -640,7 +640,7 @@
 
           <div class="jn-admin-menu-card">
             <label style="display:flex; align-items:center; gap:8px; font-size:0.92rem; cursor:pointer;">
-              <input type="checkbox" id="jn-calc-tva" style="width:18px; height:18px;">
+              <input type="checkbox" id="jn-calc-tva" checked style="width:18px; height:18px;">
               Appliquer la TVA (5,5%) sur ce devis
             </label>
             <p style="font-size:0.8rem; color:var(--text-muted,#8C5D6B); margin:8px 0 0;">Décochez si le devis doit rester en prix net (sans TVA). Un acompte de 30% sera automatiquement demandé à la signature du devis.</p>
@@ -933,7 +933,10 @@
     const s = window.JN.getSettings();
 
     const safeClient = client.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
-    const fileBase = 'devis-' + (safeClient || 'client');
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const stamp = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + '-' + pad(now.getHours()) + 'h' + pad(now.getMinutes());
+    const fileBase = 'devis-' + (safeClient || 'client') + '-' + stamp;
 
     const btn = document.getElementById('jn-calc-download');
     const restoreBtn = () => { if (btn) { btn.disabled = false; btn.textContent = '⬇ Télécharger le récapitulatif'; } };
