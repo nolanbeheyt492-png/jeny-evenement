@@ -19,6 +19,21 @@
   let settingsCache = null;
   let authToken = localStorage.getItem('jn_admin_token') || null;
 
+  // Empêche le double verrouillage/déverrouillage du scroll (modal -> panneau)
+  // qui faisait recalculer la hauteur de la page au mauvais moment sur mobile
+  // et donnait un panneau admin mal dimensionné au premier login.
+  let jcScrollLocked = false;
+  function jcLock() {
+    if (jcScrollLocked) return;
+    if (window.jcLockPageScroll) window.jcLockPageScroll();
+    jcScrollLocked = true;
+  }
+  function jcUnlock() {
+    if (!jcScrollLocked) return;
+    if (window.jcUnlockPageScroll) window.jcUnlockPageScroll();
+    jcScrollLocked = false;
+  }
+
   function fireUpdated(kind) {
     document.dispatchEvent(new CustomEvent('jn:' + kind + '-updated'));
   }
@@ -366,11 +381,15 @@
     document.body.appendChild(modal);
 
     let openedAt = 0;
-    function close() {
+    function close(keepScrollLock) {
       modal.classList.remove('open');
       document.getElementById('jn-admin-pass').value = '';
       document.getElementById('jn-admin-error').style.display = 'none';
-      if (window.jcUnlockPageScroll) window.jcUnlockPageScroll();
+      // Après une connexion réussie, on enchaîne directement sur l'ouverture
+      // du panneau admin : on garde le scroll verrouillé pour éviter un
+      // cycle déverrouillage/reverrouillage qui fausse le calcul de hauteur
+      // sur mobile (panneau mal dimensionné au premier login).
+      if (!keepScrollLock) jcUnlock();
     }
     modal.addEventListener('click', (e) => {
       // Ignore le clic "fantôme" que les navigateurs mobiles émettent juste
@@ -380,7 +399,7 @@
       if (e.target === modal) close();
     });
     modal.__markOpened = function () { openedAt = Date.now(); };
-    document.getElementById('jn-admin-cancel').addEventListener('click', () => { close(); if (window.jcUnlockPageScroll) window.jcUnlockPageScroll(); });
+    document.getElementById('jn-admin-cancel').addEventListener('click', () => close());
 
     async function attemptLogin() {
       const val = document.getElementById('jn-admin-pass').value;
@@ -405,7 +424,7 @@
           // fermeture du clavier et on laisse un court instant à l'écran
           // pour se stabiliser avant d'ouvrir le panneau.
           document.getElementById('jn-admin-pass').blur();
-          close();
+          close(true); // garde le scroll verrouillé, voir commentaire dans close()
           // On attend que le défilement soit vraiment terminé (et que le
           // clavier virtuel iOS ait fini de se refermer) avant d'ouvrir le
           // panneau, exactement comme pour la reprise de session : un délai
@@ -417,7 +436,8 @@
               openAdminDashboard();
             } catch (err) {
               console.error('Ouverture du panneau admin impossible :', err);
-              alert('La connexion a réussi mais le panneau n\'a pas pu s\'ouvrir. Merci de réessayer.');
+              jcUnlock();
+              alert('La connexion a réussi mais le panneau n\'a pas pu s\'ouvrir. Merci de réessayer (appuyez de nouveau sur le logo).');
             }
           });
         }
@@ -434,7 +454,7 @@
 
   function openAdminDashboard() {
     let dash = document.getElementById('jn-admin-dash');
-    if (window.jcLockPageScroll) window.jcLockPageScroll();
+    jcLock();
     if (dash) { dash.classList.add('open'); dash.scrollTop = 0; renderAdminMenuList(); renderAdminPhotoList(); renderAdminAvisList(); renderAdminCalc(); return; }
 
     const style = document.createElement('style');
@@ -663,7 +683,7 @@
 
     try {
 
-    function closeDash() { dash.classList.remove('open'); if (window.jcUnlockPageScroll) window.jcUnlockPageScroll(); }
+    function closeDash() { dash.classList.remove('open'); jcUnlock(); }
     dash.addEventListener('click', (e) => { if (e.target === dash) closeDash(); });
     document.getElementById('jn-admin-close').addEventListener('click', closeDash);
     document.getElementById('jn-admin-logout').addEventListener('click', async () => {
@@ -1425,7 +1445,7 @@
           const modal = buildLoginModal();
           modal.classList.add('open');
           if (modal.__markOpened) modal.__markOpened();
-          if (window.jcLockPageScroll) window.jcLockPageScroll();
+          jcLock();
           setTimeout(() => document.getElementById('jn-admin-pass').focus(), 50);
         });
       } catch (err) {
