@@ -20,61 +20,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-<style>
-  .grid-features, .grid-testimonials, .checklist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
-  .feature-card { background: var(--panel); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--border); text-align: left; transition:all .25s; }
-  .feature-card:hover{ border-color: var(--accent); transform:translateY(-3px); box-shadow:0 14px 28px -14px rgba(33,27,18,0.18); }
-  .feature-card h3 { font-size: 1.15rem; margin-bottom: 10px; color: var(--text); font-weight:700; }
-  .feature-card p { color: var(--text-muted); font-size: 0.95rem; }
-
-  .checklist-box { background: var(--bg-alt); border: 1px solid var(--border); padding: 36px; border-radius: var(--radius-lg); margin-top: 40px; }
-  .checklist-item { display: flex; gap: 16px; margin-bottom: 16px; align-items: start; }
-  .checklist-item .icon-badge{ margin-bottom:0; width:44px; height:44px; }
-  .checklist-item .icon-badge svg{ width:20px; height:20px; }
-  .checklist-item h4 { font-size: 1rem; color: var(--text); margin-bottom: 4px; font-weight:700; }
-  .checklist-item p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
-
-  .testimonial-card { background: var(--panel); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(33,27,18,0.03); }
-  .stars { color: var(--accent); margin-bottom: 12px; font-size: 1.2rem; letter-spacing:2px; }
-  .testimonial-card p { font-style: italic; color: var(--text); margin-bottom: 16px; font-size: 0.95rem; }
-  .testimonial-author { font-weight: 700; font-size: 0.9rem; color: var(--text); font-family: var(--font-display); }
-  .testimonial-author span { display:block; font-weight:400; font-family: var(--font-body); color: var(--text-muted); font-size:0.8rem; margin-top:2px; }
-
-  .process-track{ position:relative; display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-top:52px; }
-  .process-track::before{ content:""; position:absolute; top:26px; left:5%; right:5%; height:1px; background:var(--chalk); z-index:0; }
-  .process-step{ position:relative; z-index:1; text-align:center; }
-  .process-step .step-num{ width:52px; height:52px; border-radius:50%; background:var(--panel); border:2px solid var(--chalk); color:var(--chalk); font-family:var(--font-mono); font-weight:600; font-size:1.1rem; display:flex; align-items:center; justify-content:center; margin:0 auto 18px; }
-  .process-step h4{ font-size:1.05rem; margin-bottom:8px; color:var(--text); font-family:var(--font-display); }
-  .process-step p{ font-size:0.88rem; color:var(--text-muted); line-height:1.55; max-width:230px; margin:0 auto; }
-  @media (max-width:768px){
-    .process-track{ grid-template-columns:1fr; gap:32px; text-align:left; }
-    .process-track::before{ display:none; }
-    .process-step{ display:flex; gap:16px; text-align:left; align-items:flex-start; }
-    .process-step .step-num{ margin:0; flex-shrink:0; }
-    .process-step p{ max-width:none; }
-  }
-
-  /* Modal de secours PDF */
-  .jn-pdf-modal-overlay{ position:fixed !important; inset:0; background:rgba(33,27,18,0.55); z-index:999999; display:flex; align-items:flex-start; justify-content:center; padding:20px; overflow-y:auto; }
-  .jn-pdf-modal{ position:relative; background:var(--panel); border-radius:var(--radius-lg); padding:36px; max-width:440px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 30px 60px -20px rgba(33,27,18,0.35); }
-  .jn-pdf-modal-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border:none; border-radius:50%; background:var(--bg-alt); cursor:pointer; font-size:1rem; color:var(--text-muted); }
-  .jn-pdf-modal-icon{ font-size:2.4rem; margin-bottom:12px; }
-  .jn-pdf-modal h3{ font-size:1.3rem; margin-bottom:10px; color:var(--text); }
-  .jn-pdf-modal > p{ color:var(--text-muted); font-size:0.95rem; line-height:1.55; margin-bottom:24px; }
-  .jn-pdf-modal-option strong{ display:block; font-size:0.95rem; color:var(--text); margin-bottom:4px; }
-  .jn-pdf-modal-option p{ color:var(--text-muted); font-size:0.85rem; margin-bottom:12px; }
-  .jn-pdf-modal-option .btn{ width:100%; }
-  .jn-pdf-modal-divider{ text-align:center; color:var(--text-muted); font-size:0.8rem; margin:20px 0; position:relative; }
-  .jn-pdf-modal-divider::before{ content:""; position:absolute; top:50%; left:0; right:0; height:1px; background:var(--border); z-index:0; }
-  .jn-pdf-modal-divider span{ background:var(--panel); position:relative; z-index:1; padding:0 10px; }
-  .jn-pdf-email-form{ display:flex; flex-direction:column; gap:10px; }
-  .jn-pdf-email-form input{ width:100%; padding:14px 16px; border:1.5px solid var(--border); border-radius:var(--radius-md); font-family:inherit; font-size:1rem; line-height:1.4; box-sizing:border-box; }
-  .jn-pdf-email-form input:focus{ outline:none; border-color:var(--accent); }
-  .jn-pdf-email-form button{ width:100%; }
-  .jn-pdf-email-status{ margin-top:10px; font-size:0.85rem; color:var(--text-muted); }
-  .jn-pdf-email-status.success{ color:var(--success, #4a8a5c); font-weight:600; }
-  .jn-pdf-email-status.error{ color:#b0403a; font-weight:600; }
-</style>
 <link rel="icon" type="image/png" sizes="512x512" href="favicon-512.png">
 <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
