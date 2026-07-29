@@ -728,7 +728,7 @@
       const menu = menusCache.find((m) => m.id === sel.value);
       if (!menu) { alert('Ajoutez d\'abord un menu depuis l\'onglet Menus.'); return; }
       const guestsForMenu = parseInt(document.getElementById('jn-calc-menu-guests').value, 10) || 1;
-      const includedItems = (menu.items || []).map((it) => it.name + (it.unit ? ' (' + it.unit + ')' : ''));
+      const includedItems = (menu.items || []).map((it) => it.name);
       calcLines.push({ label: (menu.title || 'Menu') + ' (menu / pers.)', unitPrice: menu.pricePerPerson || 0, qty: guestsForMenu, includedItems: includedItems });
       const guestsMain = document.getElementById('jn-calc-guests');
       if (guestsMain && (!calcLines.length || calcLines.length === 1)) guestsMain.value = guestsForMenu;
@@ -870,30 +870,33 @@
 
     const rowsHtml = calcLines.map((l) => `
       <tr>
-        <td style="padding:10px 12px; border-bottom:1px solid #eee;">${(l.label || '').replace(/</g, '&lt;')}${(l.includedItems && l.includedItems.length) ? '<br><span style="font-size:0.82rem; color:#8C5D6B; font-weight:normal;">Comprend : ' + l.includedItems.map(n => n.replace(/</g, '&lt;')).join(', ') + '</span>' : ''}</td>
-        <td style="padding:10px 12px; border-bottom:1px solid #eee; text-align:center;">${l.qty}</td>
-        <td style="padding:10px 12px; border-bottom:1px solid #eee; text-align:right;">${window.JN.formatEuro(l.unitPrice)}</td>
-        <td style="padding:10px 12px; border-bottom:1px solid #eee; text-align:right; font-weight:600;">${window.JN.formatEuro(calcLineTotal(l))}</td>
+        <td style="padding:14px 16px; border-bottom:1px solid #eee;">${(l.label || '').replace(/</g, '&lt;')}${(l.includedItems && l.includedItems.length) ? ' *<br><span style="font-size:0.85rem; color:#8C5D6B; font-weight:normal;">Comprend : ' + l.includedItems.map(n => n.replace(/</g, '&lt;')).join(', ') + '</span>' : ''}</td>
+        <td style="padding:14px 16px; border-bottom:1px solid #eee; text-align:center;">${l.qty}</td>
+        <td style="padding:14px 16px; border-bottom:1px solid #eee; text-align:right;">${window.JN.formatEuro(l.unitPrice)}</td>
+        <td style="padding:14px 16px; border-bottom:1px solid #eee; text-align:right; font-weight:600;">${window.JN.formatEuro(calcLineTotal(l))}</td>
       </tr>`).join('');
 
     const html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">' +
       '<title>Devis — ' + client.replace(/</g, '&lt;') + '</title>' +
       '<style>' +
-      'body{ font-family: Georgia, "Times New Roman", serif; color:#4A2032; max-width:700px; margin:40px auto; padding:0 20px; }' +
-      'h1{ font-size:1.5rem; margin-bottom:4px; }' +
-      '.sub{ color:#8C5D6B; font-size:0.9rem; margin-bottom:24px; line-height:1.6; }' +
-      'table{ width:100%; border-collapse:collapse; margin-bottom:20px; }' +
-      'th{ text-align:left; padding:10px 12px; background:#FBF3F1; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.4px; }' +
+      'body{ font-family: Georgia, "Times New Roman", serif; color:#4A2032; max-width:1000px; margin:40px auto; padding:0 40px; font-size:18px; }' +
+      'h1{ font-size:2rem; margin-bottom:6px; }' +
+      '.sub{ color:#8C5D6B; font-size:1rem; margin-bottom:28px; line-height:1.7; }' +
+      'table{ width:100%; border-collapse:collapse; margin-bottom:24px; font-size:1rem; }' +
+      'th{ text-align:left; padding:14px 16px; background:#FBF3F1; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.4px; }' +
+      'td{ padding:14px 16px; }' +
       'th:nth-child(2){ text-align:center; } th:nth-child(3), th:nth-child(4){ text-align:right; }' +
-      '.total-row{ display:flex; justify-content:space-between; font-size:1.3rem; font-weight:700; padding:14px 0; border-top:2px solid #4A2032; margin-top:6px; }' +
-      '.footer{ margin-top:30px; font-size:0.85rem; color:#8C5D6B; line-height:1.6; }' +
-      '@media print { body{ margin:0; } }' +
+      '.total-row{ display:flex; justify-content:space-between; font-size:1.6rem; font-weight:700; padding:18px 0; border-top:2px solid #4A2032; margin-top:8px; }' +
+      '.footer{ margin-top:36px; font-size:1rem; color:#8C5D6B; line-height:1.7; }' +
+      '.footnote{ margin-top:18px; font-size:0.92rem; color:#8C5D6B; line-height:1.6; font-style:italic; }' +
+      '@media print { body{ margin:0; max-width:100%; padding:20px 30px; } }' +
       '</style></head><body>' +
       '<h1>Récapitulatif de commande</h1>' +
       '<div class="sub">Client : ' + client.replace(/</g, '&lt;') + (dateLabel ? ' — Événement le ' + dateLabel : '') + (guests ? ' — ' + guests + ' personne(s)' : '') + '<br>' +
       'Établi le ' + new Date().toLocaleDateString('fr-FR') + ' par Jennifer Événement</div>' +
       '<table><thead><tr><th>Article</th><th>Qté</th><th>Prix unit.</th><th>Sous-total</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
       '<div class="total-row"><span>Total estimé</span><span>' + window.JN.formatEuro(total) + '</span></div>' +
+      '<div class="footnote">* Nombre de choix inclus par pièce : de 30 à 60 pièces, 2 choix disponibles. Au-delà de 60 pièces, 3 choix disponibles.</div>' +
       '<div class="footer">' + (s.phone ? 'Tél : ' + s.phone + '<br>' : '') + (s.email ? 'Email : ' + s.email : '') +
       '<br><br>Ce document est une estimation et peut être ajusté selon vos besoins.</div>' +
       '</body></html>';
