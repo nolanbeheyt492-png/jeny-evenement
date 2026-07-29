@@ -635,6 +635,14 @@
         </div>
       </div>`;
     document.body.appendChild(dash);
+    // On affiche le panneau tout de suite, avant de construire le contenu.
+    // Ainsi, si une erreur survient plus bas (ex: connexion serveur lente),
+    // l'utilisateur reste sur l'écran admin au lieu d'être renvoyé
+    // silencieusement à l'écran d'accueil.
+    dash.classList.add('open');
+    dash.scrollTop = 0;
+
+    try {
 
     function closeDash() { dash.classList.remove('open'); if (window.jcUnlockPageScroll) window.jcUnlockPageScroll(); }
     dash.addEventListener('click', (e) => { if (e.target === dash) closeDash(); });
@@ -786,12 +794,15 @@
 
     document.getElementById('jn-calc-download').addEventListener('click', downloadCalcRecap);
 
-    dash.classList.add('open');
-    dash.scrollTop = 0;
     renderAdminMenuList();
     renderAdminPhotoList();
     renderAdminAvisList();
     renderAdminCalc();
+
+    } catch (err) {
+      console.error('Erreur à l\'ouverture de l\'espace admin :', err);
+      alert('Un souci est survenu pendant le chargement de l\'espace admin (connexion au serveur trop lente ou instable). Fermez et réessayez.');
+    }
   }
 
   // ---- Calculatrice de commande (onglet admin) ---------------------------
@@ -870,6 +881,20 @@
     renderAdminCalcTotals();
   }
 
+  let html2pdfLoadPromise = null;
+  function loadHtml2Pdf() {
+    if (window.html2pdf) return Promise.resolve();
+    if (html2pdfLoadPromise) return html2pdfLoadPromise;
+    html2pdfLoadPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.onload = () => resolve();
+      script.onerror = () => { html2pdfLoadPromise = null; reject(new Error('html2pdf load failed')); };
+      document.head.appendChild(script);
+    });
+    return html2pdfLoadPromise;
+  }
+
   function downloadCalcRecap() {
     if (!calcLines.length) { alert('Ajoutez au moins un article avant de télécharger le récapitulatif.'); return; }
     const client = (document.getElementById('jn-calc-client').value || '').trim() || 'Client';
@@ -940,12 +965,50 @@
       '<br><br>Ce document est une estimation et peut être ajusté selon vos besoins.</div>' +
       '</body></html>';
 
+    const safeClient = client.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    const fileBase = 'devis-' + (safeClient || 'client');
+
+    const btn = document.getElementById('jn-calc-download');
+    const restoreBtn = () => { if (btn) { btn.disabled = false; btn.textContent = '⬇ Télécharger le récapitulatif'; } };
+    if (btn) { btn.disabled = true; btn.textContent = 'Génération du PDF…'; }
+
+    loadHtml2Pdf().then(() => {
+      const container = document.createElement('div');
+      container.style.position = 'fixed';
+      container.style.left = '-99999px';
+      container.style.top = '0';
+      container.style.width = '900px';
+      container.innerHTML = html.replace(/^[\s\S]*<body>/, '<div>').replace(/<\/body>[\s\S]*$/, '</div>');
+      document.body.appendChild(container);
+
+      window.html2pdf().set({
+        margin: 10,
+        filename: fileBase + '.pdf',
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      }).from(container).save().then(() => {
+        document.body.removeChild(container);
+        restoreBtn();
+      }).catch((err) => {
+        console.error('Erreur génération PDF :', err);
+        document.body.removeChild(container);
+        restoreBtn();
+        alert('Le PDF n\'a pas pu être généré. Réessayez, ou vérifiez votre connexion internet.');
+      });
+    }).catch((err) => {
+      console.error('Erreur chargement générateur PDF :', err);
+      restoreBtn();
+      alert('Impossible de charger le générateur de PDF (connexion internet requise). Réessayez.');
+    });
+    return;
+
+    // (code historique conservé plus bas, non exécuté, au cas où)
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const safeClient = client.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
     a.href = url;
-    a.download = 'devis-' + (safeClient || 'client') + '.html';
+    a.download = fileBase + '.html';
     document.body.appendChild(a);
     a.click();
     a.remove();
