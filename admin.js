@@ -399,8 +399,15 @@
         } else {
           authToken = data.token;
           localStorage.setItem('jn_admin_token', authToken);
+          // Sur iPhone, si on ouvre le panneau admin pendant que le clavier
+          // virtuel se referme, Safari n'a pas fini de recalculer la hauteur
+          // de l'écran et le panneau s'affiche mal cadré. On force la
+          // fermeture du clavier et on laisse un court instant à l'écran
+          // pour se stabiliser avant d'ouvrir le panneau.
+          document.getElementById('jn-admin-pass').blur();
           close();
-          openAdminDashboard();
+          window.scrollTo(0, 0);
+          setTimeout(openAdminDashboard, 350);
         }
       } catch (err) {
         btn.disabled = false; btn.textContent = 'Se connecter';
@@ -974,20 +981,30 @@
 
     loadHtml2Pdf().then(() => {
       const container = document.createElement('div');
+      // Important : on ne place plus le container très loin hors-écran (ex: left:-99999px),
+      // car html2canvas peut alors capturer une zone vide et produire un PDF blanc.
+      // On le garde dans la zone visible du document mais invisible via opacity + pointer-events.
       container.style.position = 'fixed';
-      container.style.left = '-99999px';
+      container.style.left = '0';
       container.style.top = '0';
       container.style.width = '900px';
+      container.style.opacity = '0';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '-1';
       container.innerHTML = html.replace(/^[\s\S]*<body>/, '<div>').replace(/<\/body>[\s\S]*$/, '</div>');
       document.body.appendChild(container);
 
-      window.html2pdf().set({
+      // Petit délai pour laisser le temps aux images (logo, signature) de se charger
+      // avant que html2canvas ne prenne la "photo" du contenu.
+      const waitForRender = new Promise((resolve) => setTimeout(resolve, 200));
+
+      waitForRender.then(() => window.html2pdf().set({
         margin: 10,
         filename: fileBase + '.pdf',
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 900 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      }).from(container).save().then(() => {
+      }).from(container).save()).then(() => {
         document.body.removeChild(container);
         restoreBtn();
       }).catch((err) => {
