@@ -160,6 +160,140 @@
     return photosCache;
   }
 
+  // ---- DASHBOARD ----------------------------------------------------------
+  let dashboardStatsCache = null;
+  let dashChartInstance = null;
+  let dashChartRange = 'week';
+  let chartJsLoadPromise = null;
+
+  function loadChartJs() {
+    if (window.Chart) return Promise.resolve();
+    if (chartJsLoadPromise) return chartJsLoadPromise;
+    chartJsLoadPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js';
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    return chartJsLoadPromise;
+  }
+
+  async function fetchDashboardStats(range) {
+    try {
+      dashboardStatsCache = await apiGet('/api/stats/dashboard?range=' + (range || dashChartRange));
+    } catch (err) {
+      console.error('Erreur chargement stats dashboard:', err);
+      dashboardStatsCache = null;
+    }
+    return dashboardStatsCache;
+  }
+
+  async function fetchDevisList() {
+    try {
+      return await apiGet('/api/devis');
+    } catch (err) {
+      console.error('Erreur chargement des devis:', err);
+      return [];
+    }
+  }
+
+  function renderDashCards(stats) {
+    if (!stats) return;
+    document.getElementById('jn-dash-count-month').textContent = stats.devis_this_month ?? '—';
+    const prev = stats.devis_prev_month;
+    const sub = document.getElementById('jn-dash-count-month-sub');
+    if (typeof prev === 'number' && prev > 0 && typeof stats.devis_this_month === 'number') {
+      const diff = Math.round(((stats.devis_this_month - prev) / prev) * 100);
+      sub.textContent = (diff >= 0 ? '+' : '') + diff + '% vs mois dernier';
+    } else { sub.textContent = ''; }
+
+    const rate = stats.response_rate;
+    document.getElementById('jn-dash-response-rate').textContent = (typeof rate === 'number') ? Math.round(rate) + '%' : '—';
+    document.getElementById('jn-dash-response-sub').textContent = stats.responded_count != null ? (stats.responded_count + ' répondu(s) / ' + stats.total_count + ' total') : '';
+
+    document.getElementById('jn-dash-top-menu').textContent = stats.top_menu_name || 'Pas encore de données';
+    document.getElementById('jn-dash-top-menu-sub').textContent = stats.top_menu_views ? (stats.top_menu_views + ' consultation(s)') : '';
+  }
+
+  function renderDashChart(stats) {
+    const canvas = document.getElementById('jn-dash-chart');
+    if (!canvas || !window.Chart) return;
+    const labels = (stats && stats.series && stats.series.labels) || [];
+    const values = (stats && stats.series && stats.series.values) || [];
+    if (dashChartInstance) { dashChartInstance.destroy(); }
+    dashChartInstance = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Demandes de devis',
+          data: values,
+          backgroundColor: '#D67A93',
+          borderRadius: 6,
+          maxBarThickness: 34
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    });
+  }
+
+  function renderDashDevisList(devisArr) {
+    const el = document.getElementById('jn-dash-devis-list');
+    const badge = document.getElementById('jn-dash-badge-new');
+    if (!devisArr || !devisArr.length) {
+      el.innerHTML = '<div class="jn-dash-empty">Aucune demande de devis pour le moment.</div>';
+      if (badge) badge.style.display = 'none';
+      return;
+    }
+    const newCount = devisArr.filter((d) => d.status === 'a_traiter').length;
+    if (badge) {
+      if (newCount > 0) { badge.style.display = 'inline-block'; badge.textContent = newCount + ' nouvelle(s)'; }
+      else { badge.style.display = 'none'; }
+    }
+    const statusLabels = { a_traiter: 'À traiter', repondu: 'Répondu', archive: 'Archivé' };
+    const statusClass = { a_traiter: 'a-traiter', repondu: 'repondu', archive: 'archive' };
+    el.innerHTML = devisArr.slice(0, 10).map((d) => {
+      const date = d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+      const st = d.status || 'a_traiter';
+      return `<div class="jn-dash-devis-item" data-devis-id="${d.id}">
+        <div>
+          <div class="jn-dash-devis-main">${(d.name || 'Client').replace(/</g, '&lt;')}</div>
+          <div class="jn-dash-devis-sub">${date}${d.event_type ? ' · ' + d.event_type.replace(/</g, '&lt;') : ''}</div>
+        </div>
+        <button type="button" class="jn-dash-status ${statusClass[st] || 'a-traiter'}" data-current-status="${st}">${statusLabels[st] || st}</button>
+      </div>`;
+    }).join('');
+
+    el.querySelectorAll('.jn-dash-status').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const item = btn.closest('[data-devis-id]');
+        const id = item.getAttribute('data-devis-id');
+        const order = ['a_traiter', 'repondu', 'archive'];
+        const cur = btn.getAttribute('data-current-status');
+        const next = order[(order.indexOf(cur) + 1) % order.length];
+        btn.disabled = true;
+        const { error } = await apiPut('/api/devis/' + id, { status: next });
+        btn.disabled = false;
+        if (error) { alert('Erreur lors de la mise à jour du statut.'); return; }
+        await refreshDashboard();
+      });
+    });
+  }
+
+  async function refreshDashboard() {
+    await loadChartJs().catch(() => {});
+    const [stats, devisArr] = await Promise.all([fetchDashboardStats(dashChartRange), fetchDevisList()]);
+    renderDashCards(stats);
+    renderDashChart(stats);
+    renderDashDevisList(devisArr);
+  }
+
   // ---- API publique (utilisée par menus.html, menu.html, index.html) ----
   window.JN = {
     getMenus: function () { return menusCache; },
@@ -172,6 +306,18 @@
     },
     refreshMenus: fetchMenus,
     refreshPhotos: fetchPhotos,
+    trackMenuView: function (menuId) {
+      if (!menuId) return;
+      try {
+        const url = API_BASE + '/api/track/menu-view';
+        const payload = JSON.stringify({ menu_id: menuId });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
+        } else {
+          fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(() => {});
+        }
+      } catch (e) {}
+    },
     ready: null
   };
 
@@ -518,6 +664,26 @@
       @media (min-width:700px){ #jn-admin-add-btn{ width:auto; } }
       #jn-admin-saved-msg{ display:none; align-items:center; gap:8px; background:#E4F3E7; color:#2B6B3F; padding:11px 14px; border-radius:var(--radius-sm,10px); font-size:0.85rem; font-weight:600; margin-bottom:14px; }
 
+      .jn-dash-cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:12px; margin-bottom:16px; }
+      .jn-dash-card{ background:#fff; border:1px solid var(--border,#eee); border-radius:var(--radius-md,16px); padding:16px 18px; box-shadow:0 2px 10px -6px rgba(74,32,50,0.12); }
+      .jn-dash-card-label{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted,#8C5D6B); font-weight:600; margin-bottom:8px; }
+      .jn-dash-card-value{ font-family:var(--font-display,serif); font-size:1.9rem; color:var(--text,#4A2032); font-weight:700; line-height:1.1; }
+      .jn-dash-card-value-text{ font-size:1.15rem; }
+      .jn-dash-card-sub{ font-size:0.76rem; color:var(--text-muted,#8C5D6B); margin-top:4px; min-height:1em; }
+      .jn-dash-chart-toggle{ display:flex; gap:6px; }
+      .jn-dash-range-btn{ background:#fff; border:1px solid var(--border,#eee); border-radius:999px; padding:6px 12px; font-size:0.74rem; font-weight:600; color:var(--text-muted,#8C5D6B); cursor:pointer; }
+      .jn-dash-range-btn.active{ background:var(--accent,#D67A93); color:#fff; border-color:var(--accent,#D67A93); }
+      .jn-dash-badge{ background:#D64545; color:#fff; font-size:0.7rem; font-weight:700; padding:3px 9px; border-radius:999px; }
+      .jn-dash-devis-item{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 0; border-bottom:1px solid var(--border,#f1e6e6); font-size:0.85rem; flex-wrap:wrap; }
+      .jn-dash-devis-item:last-child{ border-bottom:none; }
+      .jn-dash-devis-main{ color:var(--text,#4A2032); font-weight:600; }
+      .jn-dash-devis-sub{ color:var(--text-muted,#8C5D6B); font-size:0.76rem; }
+      .jn-dash-status{ font-size:0.7rem; font-weight:700; padding:3px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:0.3px; cursor:pointer; border:none; }
+      .jn-dash-status.a-traiter{ background:#FBE3C8; color:#8A5A17; }
+      .jn-dash-status.repondu{ background:#D9EEDD; color:#256B3A; }
+      .jn-dash-status.archive{ background:#EAEAEA; color:#666; }
+      .jn-dash-empty{ color:var(--text-muted,#8C5D6B); font-size:0.85rem; padding:10px 0; }
+
       .jn-photo-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(110px,1fr)); gap:10px; margin-bottom:18px; }
       @media (min-width:700px){ .jn-photo-grid{ grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px; } }
       .jn-photo-card{ position:relative; border-radius:var(--radius-sm,12px); overflow:hidden; border:1px solid var(--border,#eee); aspect-ratio:1; box-shadow:0 2px 8px -4px rgba(74,32,50,0.15); }
@@ -570,13 +736,52 @@
         <div id="jn-admin-content">
         <div id="jn-admin-saved-msg">✅ Modifications enregistrées.</div>
         <div class="jn-admin-tabs">
-          <div class="jn-admin-tab active" data-tab="menus">🍽️ Menus</div>
+          <div class="jn-admin-tab active" data-tab="dashboard">📊 Dashboard</div>
+          <div class="jn-admin-tab" data-tab="menus">🍽️ Menus</div>
           <div class="jn-admin-tab" data-tab="photos">📷 Photos</div>
           <div class="jn-admin-tab" data-tab="avis">💬 Avis</div>
           <div class="jn-admin-tab" data-tab="reglages">⚙️ Réglages</div>
           <div class="jn-admin-tab" data-tab="calc">🧮 Calculatrice</div>
         </div>
-        <div class="jn-admin-tabpanel active" id="jn-tab-menus">
+        <div class="jn-admin-tabpanel active" id="jn-tab-dashboard">
+          <div class="jn-dash-cards">
+            <div class="jn-dash-card">
+              <div class="jn-dash-card-label">Devis reçus ce mois</div>
+              <div class="jn-dash-card-value" id="jn-dash-count-month">—</div>
+              <div class="jn-dash-card-sub" id="jn-dash-count-month-sub"></div>
+            </div>
+            <div class="jn-dash-card">
+              <div class="jn-dash-card-label">Taux de réponse</div>
+              <div class="jn-dash-card-value" id="jn-dash-response-rate">—</div>
+              <div class="jn-dash-card-sub" id="jn-dash-response-sub"></div>
+            </div>
+            <div class="jn-dash-card">
+              <div class="jn-dash-card-label">Menu le plus consulté</div>
+              <div class="jn-dash-card-value jn-dash-card-value-text" id="jn-dash-top-menu">—</div>
+              <div class="jn-dash-card-sub" id="jn-dash-top-menu-sub"></div>
+            </div>
+          </div>
+          <div class="jn-admin-menu-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+              <label style="margin:0;">Demandes de devis</label>
+              <div class="jn-dash-chart-toggle">
+                <button type="button" class="jn-dash-range-btn active" data-range="week">Par semaine</button>
+                <button type="button" class="jn-dash-range-btn" data-range="month">Par mois</button>
+              </div>
+            </div>
+            <div style="position:relative; height:220px;">
+              <canvas id="jn-dash-chart"></canvas>
+            </div>
+          </div>
+          <div class="jn-admin-menu-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <label style="margin:0;">Dernières demandes</label>
+              <span id="jn-dash-badge-new" class="jn-dash-badge" style="display:none;"></span>
+            </div>
+            <div id="jn-dash-devis-list"></div>
+          </div>
+        </div>
+        <div class="jn-admin-tabpanel" id="jn-tab-menus">
           <div id="jn-admin-menu-list"></div>
           <button id="jn-admin-add-btn" type="button">+ Ajouter un menu</button>
         </div>
