@@ -122,7 +122,7 @@
     email: 'jenniferevenement@gmail.com',
     stat1_value: '150+',
     stat1_label: 'Événements réalisés',
-    stat2_value: '2500+',
+    stat2_value: '500+',
     stat2_label: 'Convives servis',
     stat3_value: '5.0★',
     stat3_label: 'Note moyenne clients'
